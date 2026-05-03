@@ -17,20 +17,32 @@ jobs:
 
       - run: npm ci
       - run: npm run build
-      # Output ada di ./dist/
+      # Output in ./dist/
 
-      # ── Opsi A: Deploy via SSH ke server sendiri ──────────────
-      - name: Deploy via SSH
+      # Step 1: SSH to server, clean all except cpanel files and .htaccess
+      - name: Clean target folder
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            rsync -avz --delete ./dist/ user@host:/var/www/blog/
+            find /home/pikomoto/blog.pikomo.top/ -mindepth 1 \
+              ! -name '.htaccess*' \
+              ! -name '.well-known' \
+              ! -path '/home/pikomoto/blog.pikomo.top/.well-known/*' \
+              ! -name 'cgi-bin' \
+              ! -path '/home/pikomoto/blog.pikomo.top/cgi-bin/*' \
+              ! -name 'error_log' \
+              -delete
 
-      # ── Opsi B: Deploy ke GitHub Pages ────────────────────────
-      # - uses: actions/upload-pages-artifact@v3
-      #   with:
-      #     path: ./dist
-      # - uses: actions/deploy-pages@v4
+      # Step 2: Copy ./dist/ from VM to server
+      - name: Upload dist to server
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz
+          path: dist/
+          remote_path: /home/pikomoto/blog.pikomo.top/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
