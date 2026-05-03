@@ -260,7 +260,7 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 				grid-column: 1 / -1;
 				flex-direction: row;
 			}
-			.post-card.in-series {
+			.post-card.in-series:not(.featured) {
 				border-left: 3px solid var(--series-text);
 			}
 			.post-card[data-hidden="true"] {
