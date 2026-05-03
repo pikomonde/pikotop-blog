@@ -10,6 +10,11 @@ import { SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+// Collect all unique topics, series, and publishers for the filter dropdowns
+const allTopics = [...new Set(posts.flatMap((p) => p.data.tagTopics ?? []))].sort();
+const allSeries = [...new Set(posts.flatMap((p) => p.data.tagSeries ?? []))].sort();
+const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publishedOn ?? {})))].sort();
 ---
 
 <!doctype html>
@@ -17,71 +22,420 @@ const posts = (await getCollection('blog')).sort(
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
 		<style>
+			/* ─── Layout ─────────────────────────────────────────── */
 			main {
-				width: 960px;
+				width: 900px;
+				max-width: calc(100% - 3rem);
+				margin: 0 auto;
+				padding: 2rem 0 4rem;
 			}
-			ul {
+
+			/* ─── Filter Bar ─────────────────────────────────────── */
+			.filter-bar {
 				display: flex;
+				align-items: center;
+				gap: 10px;
+				margin-bottom: 1.75rem;
 				flex-wrap: wrap;
-				gap: 2rem;
-				list-style-type: none;
-				margin: 0;
-				padding: 0;
 			}
-			ul li {
-				width: calc(50% - 1rem);
+
+			.filter-label {
+				font-size: 12px;
+				color: var(--text2);
+				font-weight: 500;
 			}
-			ul li * {
-				text-decoration: none;
-				transition: 0.2s ease;
+
+			.pill-group {
+				display: flex;
+				gap: 3px;
+				background: var(--bg3);
+				border-radius: 20px;
+				padding: 3px;
 			}
-			ul li:first-child {
-				width: 100%;
-				margin-bottom: 1rem;
-				text-align: center;
+
+			.pill {
+				padding: 4px 13px;
+				border-radius: 14px;
+				font-size: 12px;
+				cursor: pointer;
+				color: var(--text2);
+				background: transparent;
+				border: none;
+				font-family: inherit;
+				transition: background 0.15s, color 0.15s;
 			}
-			ul li:first-child img {
-				width: 100%;
+
+			.pill.active {
+				background: var(--pill-active-bg);
+				color: var(--pill-active-text);
+				font-weight: 500;
 			}
-			ul li:first-child .title {
-				font-size: 2.369rem;
+
+			.divider-v {
+				width: 1px;
+				height: 20px;
+				background: var(--border2);
+				flex-shrink: 0;
 			}
-			ul li img {
-				margin-bottom: 0.5rem;
-				border-radius: 12px;
+
+			/* ─── Dropdown ───────────────────────────────────────── */
+			.select-wrap {
+				position: relative;
 			}
-			ul li a {
+
+			.filter-btn {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				background: var(--bg3);
+				border: 0.5px solid var(--border);
+				border-radius: 8px;
+				padding: 5px 10px;
+				font-size: 12px;
+				font-family: inherit;
+				color: var(--text);
+				cursor: pointer;
+				white-space: nowrap;
+				transition: border-color 0.15s;
+			}
+			.filter-btn:hover {
+				border-color: var(--border2);
+			}
+
+			.filter-btn .caret {
+				color: var(--text3);
+				font-size: 10px;
+				transition: transform 0.2s;
+			}
+			.filter-btn.open .caret {
+				transform: rotate(180deg);
+			}
+
+			.count-badge {
+				background: var(--accent);
+				color: #fff;
+				border-radius: 10px;
+				padding: 0 6px;
+				font-size: 10px;
+				font-weight: 500;
+			}
+
+			.dropdown {
+				display: none;
+				position: absolute;
+				top: calc(100% + 6px);
+				left: 0;
+				min-width: 230px;
+				background: var(--bg);
+				border: 0.5px solid var(--border2);
+				border-radius: 10px;
+				padding: 8px 0;
+				z-index: 100;
+				box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+			}
+			.dropdown.open {
 				display: block;
 			}
-			.title {
-				margin: 0;
-				color: rgb(var(--black));
-				line-height: 1;
+
+			.dd-group-label {
+				font-size: 10px;
+				font-weight: 500;
+				color: var(--text3);
+				padding: 8px 12px 4px;
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
 			}
-			.date {
-				margin: 0;
-				color: rgb(var(--gray));
+
+			.dd-item {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 6px 12px;
+				cursor: pointer;
+				font-size: 13px;
+				color: var(--text);
+				transition: background 0.1s;
 			}
-			ul li a:hover h4,
-			ul li a:hover .date {
-				color: rgb(var(--accent));
+			.dd-item:hover {
+				background: var(--bg3);
 			}
-			ul a:hover img {
-				box-shadow: var(--box-shadow);
+
+			.dd-check {
+				width: 14px;
+				height: 14px;
+				border-radius: 3px;
+				border: 1.5px solid var(--border2);
+				flex-shrink: 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 9px;
+				color: #fff;
+				transition: background 0.15s, border-color 0.15s;
 			}
+			.dd-item.checked .dd-check {
+				background: var(--accent);
+				border-color: var(--accent);
+			}
+
+			.dd-tag {
+				font-size: 10px;
+				padding: 1px 6px;
+				border-radius: 3px;
+				margin-left: auto;
+				flex-shrink: 0;
+			}
+			.dd-tag.topic {
+				background: var(--tag-bg);
+				color: var(--tag-text);
+			}
+			.dd-tag.series {
+				background: var(--series-bg);
+				color: var(--series-text);
+			}
+
+			.dd-sep {
+				height: 0.5px;
+				background: var(--border);
+				margin: 4px 0;
+			}
+
+			/* ─── Active Filter Chips ────────────────────────────── */
+			.active-filters {
+				display: none;
+				gap: 6px;
+				flex-wrap: wrap;
+				margin-bottom: 1.25rem;
+			}
+			.active-filters.visible {
+				display: flex;
+			}
+
+			.active-chip {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				background: var(--series-bg);
+				color: var(--series-text);
+				font-size: 11px;
+				padding: 3px 10px;
+				border-radius: 20px;
+				cursor: pointer;
+				border: none;
+				font-family: inherit;
+			}
+			.active-chip:hover {
+				opacity: 0.8;
+			}
+			.active-chip .x {
+				font-size: 10px;
+				opacity: 0.7;
+			}
+
+			/* ─── Post Grid ──────────────────────────────────────── */
+			.post-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+				gap: 1.25rem;
+			}
+
+			/* ─── Post Card ──────────────────────────────────────── */
+			.post-card {
+				background: var(--bg);
+				border: 0.5px solid var(--border);
+				border-radius: 12px;
+				overflow: hidden;
+				cursor: pointer;
+				transition: border-color 0.2s, box-shadow 0.2s;
+				display: flex;
+				flex-direction: column;
+				text-decoration: none;
+				color: inherit;
+			}
+			.post-card:hover {
+				border-color: var(--accent);
+				box-shadow: 0 4px 16px rgba(35, 55, 255, 0.08);
+			}
+			.post-card.featured {
+				grid-column: 1 / -1;
+				flex-direction: row;
+			}
+			.post-card.in-series {
+				border-left: 3px solid var(--series-text);
+			}
+			.post-card[data-hidden="true"] {
+				display: none;
+			}
+
+			/* ─── Card Image ─────────────────────────────────────── */
+			.post-img {
+				background: var(--bg3);
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				overflow: hidden;
+				flex-shrink: 0;
+			}
+			.post-img img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				border-radius: 0;
+				display: block;
+			}
+			.post-img-placeholder {
+				width: 100%;
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: var(--text3);
+				font-size: 11px;
+			}
+			.post-card.featured .post-img {
+				width: 50%;
+				aspect-ratio: unset;
+				min-height: 200px;
+			}
+
+			/* ─── Card Body ──────────────────────────────────────── */
+			.post-body {
+				padding: 1rem 1.25rem;
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.post-meta {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				margin-bottom: 8px;
+				flex-wrap: wrap;
+			}
+
+			.tag {
+				font-size: 11px;
+				padding: 2px 7px;
+				border-radius: 4px;
+			}
+			.tag.topic {
+				background: var(--tag-bg);
+				color: var(--tag-text);
+			}
+			.tag.series {
+				background: var(--series-bg);
+				color: var(--series-text);
+				cursor: pointer;
+			}
+			.tag.series:hover {
+				opacity: 0.8;
+			}
+
+			.lang-badge {
+				background: var(--bg3);
+				color: var(--text2);
+				font-size: 11px;
+				padding: 2px 7px;
+				border-radius: 4px;
+				font-weight: 500;
+			}
+
+			.post-title {
+				font-size: 15px;
+				font-weight: 500;
+				line-height: 1.4;
+				margin-bottom: 6px;
+				color: var(--text);
+			}
+
+			.post-desc {
+				font-size: 13px;
+				color: var(--text2);
+				line-height: 1.5;
+				margin-bottom: 10px;
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+				flex: 1;
+			}
+
+			.post-dates {
+				font-size: 11px;
+				color: var(--text2);
+			}
+			.post-dates .upd {
+				font-style: italic;
+			}
+
+			.pub-row {
+				display: flex;
+				gap: 5px;
+				margin-top: 8px;
+				flex-wrap: wrap;
+			}
+			.pub-badge {
+				background: var(--pub-bg);
+				color: var(--pub-text);
+				font-size: 10px;
+				padding: 2px 8px;
+				border-radius: 4px;
+			}
+
+			/* ─── Author Row ─────────────────────────────────────── */
+			.author-row {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				padding: 0.75rem 1.25rem;
+				border-top: 0.5px solid var(--border);
+				margin-top: auto;
+			}
+
+			.avatar {
+				width: 26px;
+				height: 26px;
+				border-radius: 50%;
+				background: var(--tag-bg);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 10px;
+				font-weight: 500;
+				color: var(--tag-text);
+				flex-shrink: 0;
+			}
+
+			.author-name {
+				font-size: 12px;
+				color: var(--text2);
+			}
+
+			/* ─── Empty State ────────────────────────────────────── */
+			.empty-state {
+				display: none;
+				grid-column: 1 / -1;
+				text-align: center;
+				padding: 3rem 1rem;
+				color: var(--text3);
+				font-size: 14px;
+			}
+			.empty-state.visible {
+				display: block;
+			}
+
+			/* ─── Responsive ─────────────────────────────────────── */
 			@media (max-width: 720px) {
-				ul {
-					gap: 0.5em;
+				.post-card.featured {
+					flex-direction: column;
 				}
-				ul li {
+				.post-card.featured .post-img {
 					width: 100%;
-					text-align: center;
+					aspect-ratio: 16 / 9;
+					min-height: unset;
 				}
-				ul li:first-child {
-					margin-bottom: 0;
-				}
-				ul li:first-child .title {
-					font-size: 1.563em;
+				.filter-bar {
+					gap: 6px;
 				}
 			}
 		</style>
@@ -89,26 +443,374 @@ const posts = (await getCollection('blog')).sort(
 	<body>
 		<Header />
 		<main>
-			<section>
-				<ul>
-					{
-						posts.map((post) => (
-							<li>
-								<a href={`/${post.id}/`}>
-									{post.data.heroImage && (
-										<Image width={720} height={360} src={post.data.heroImage} alt="" />
+			<!-- Filter Bar -->
+			<div class="filter-bar">
+				<span class="filter-label">Language</span>
+				<div class="pill-group">
+					<button class="pill active" data-lang="all">All</button>
+					<button class="pill" data-lang="en">EN</button>
+					<button class="pill" data-lang="id">ID</button>
+				</div>
+				<div class="divider-v"></div>
+
+				<!-- Topics & Series Dropdown -->
+				<div class="select-wrap" id="wrap-topics">
+					<button class="filter-btn" id="btn-topics">
+						Topics &amp; Series <span class="caret">▾</span>
+					</button>
+					<div class="dropdown" id="dd-topics">
+						{allTopics.length > 0 && (
+							<>
+								<div class="dd-group-label">Topics</div>
+								{allTopics.map((topic) => (
+									<div class="dd-item" data-type="topic" data-value={topic}>
+										<span class="dd-check"></span>
+										<span>{topic}</span>
+										<span class="dd-tag topic">topic</span>
+									</div>
+								))}
+							</>
+						)}
+						{allSeries.length > 0 && (
+							<>
+								{allTopics.length > 0 && <div class="dd-sep"></div>}
+								<div class="dd-group-label">Series</div>
+								{allSeries.map((series) => (
+									<div class="dd-item" data-type="series" data-value={series}>
+										<span class="dd-check"></span>
+										<span>{series}</span>
+										<span class="dd-tag series">series</span>
+									</div>
+								))}
+							</>
+						)}
+					</div>
+				</div>
+
+				<!-- Publishers Dropdown -->
+				{allPublishers.length > 0 && (
+					<div class="select-wrap" id="wrap-publishers">
+						<button class="filter-btn" id="btn-publishers">
+							Publishers <span class="caret">▾</span>
+						</button>
+						<div class="dropdown" id="dd-publishers">
+							<div class="dd-group-label">Publishers</div>
+							{allPublishers.map((pub) => (
+								<div class="dd-item" data-type="publisher" data-value={pub}>
+									<span class="dd-check"></span>
+									<span>{pub}</span>
+								</div>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+
+			<!-- Active Filter Chips -->
+			<div class="active-filters" id="active-filters"></div>
+
+			<!-- Post Grid -->
+			<div class="post-grid" id="post-grid">
+				{posts.map((post, index) => {
+					const initials = post.data.author
+						.split(' ')
+						.map((w: string) => w[0])
+						.join('')
+						.toUpperCase()
+						.slice(0, 2);
+					const publishers = Object.entries(post.data.publishedOn ?? {});
+					const hasSeries = post.data.tagSeries && post.data.tagSeries.length > 0;
+
+					return (
+						<a
+							href={`/${post.id}/`}
+							class:list={[
+								'post-card',
+								{ featured: index === 0 },
+								{ 'in-series': hasSeries },
+							]}
+							data-lang={post.data.lang}
+							data-topics={JSON.stringify(post.data.tagTopics ?? [])}
+							data-series={JSON.stringify(post.data.tagSeries ?? [])}
+							data-publishers={JSON.stringify(Object.keys(post.data.publishedOn ?? {}))}
+						>
+							<!-- Image -->
+							<div class="post-img">
+								{post.data.heroImage ? (
+									<Image
+										width={index === 0 ? 600 : 400}
+										height={index === 0 ? 400 : 225}
+										src={post.data.heroImage}
+										alt=""
+									/>
+								) : (
+									<div class="post-img-placeholder">No image</div>
+								)}
+							</div>
+
+							<!-- Body -->
+							<div class="post-body">
+								<div class="post-meta">
+									{hasSeries && post.data.tagSeries!.map((s: string) => (
+										<span
+											class="tag series"
+											data-series-value={s}
+										>
+											{s}
+										</span>
+									))}
+									{post.data.tagTopics.map((t: string) => (
+										<span class="tag topic">{t}</span>
+									))}
+									<span class="lang-badge">{post.data.lang.toUpperCase()}</span>
+								</div>
+
+								<div class="post-title">{post.data.title}</div>
+								<div class="post-desc">{post.data.description}</div>
+
+								<div class="post-dates">
+									Published <FormattedDate date={post.data.pubDate} />
+									{post.data.updatedDate && (
+										<span class="upd"> · Updated <FormattedDate date={post.data.updatedDate} /></span>
 									)}
-									<h4 class="title">{post.data.title}</h4>
-									<p class="date">
-										<FormattedDate date={post.data.pubDate} />
-									</p>
-								</a>
-							</li>
-						))
-					}
-				</ul>
-			</section>
+								</div>
+
+								{publishers.length > 0 && (
+									<div class="pub-row">
+										{publishers.map(([name]) => (
+											<span class="pub-badge">{name}</span>
+										))}
+									</div>
+								)}
+							</div>
+
+							<!-- Author -->
+							<div class="author-row">
+								<div class="avatar">{initials}</div>
+								<span class="author-name">{post.data.author}</span>
+							</div>
+						</a>
+					);
+				})}
+
+				<div class="empty-state" id="empty-state">No posts match the current filters.</div>
+			</div>
 		</main>
 		<Footer />
+
+		<script>
+			// ─── State ──────────────────────────────────────────────
+			const state = {
+				lang: 'all' as string,
+				topics: new Set<string>(),
+				series: new Set<string>(),
+				publishers: new Set<string>(),
+			};
+
+			// ─── Elements ───────────────────────────────────────────
+			const cards = document.querySelectorAll<HTMLElement>('.post-card');
+			const emptyState = document.getElementById('empty-state')!;
+			const activeFiltersEl = document.getElementById('active-filters')!;
+
+			// ─── Language Pills ──────────────────────────────────────
+			document.querySelectorAll<HTMLButtonElement>('.pill[data-lang]').forEach((pill) => {
+				pill.addEventListener('click', () => {
+					document.querySelectorAll('.pill').forEach((p) => p.classList.remove('active'));
+					pill.classList.add('active');
+					state.lang = pill.dataset.lang!;
+					applyFilters();
+				});
+			});
+
+			// ─── Dropdown Logic ──────────────────────────────────────
+			let openWrap: string | null = null;
+
+			function closeAllDropdowns() {
+				document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
+				document.querySelectorAll('.filter-btn').forEach((b) => b.classList.remove('open'));
+				openWrap = null;
+			}
+
+			['topics', 'publishers'].forEach((id) => {
+				const btn = document.getElementById(`btn-${id}`);
+				const dd = document.getElementById(`dd-${id}`);
+				const wrap = document.getElementById(`wrap-${id}`);
+				if (!btn || !dd || !wrap) return;
+
+				btn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					const isOpen = dd.classList.contains('open');
+					closeAllDropdowns();
+					if (!isOpen) {
+						dd.classList.add('open');
+						btn.classList.add('open');
+						openWrap = `wrap-${id}`;
+					}
+				});
+			});
+
+			document.addEventListener('click', (e) => {
+				if (openWrap && !document.getElementById(openWrap)?.contains(e.target as Node)) {
+					closeAllDropdowns();
+				}
+			});
+
+			// ─── Dropdown Items ──────────────────────────────────────
+			document.querySelectorAll<HTMLElement>('.dd-item').forEach((item) => {
+				item.addEventListener('click', (e) => {
+					e.stopPropagation();
+					item.classList.toggle('checked');
+					const check = item.querySelector('.dd-check')!;
+					const isChecked = item.classList.contains('checked');
+					check.textContent = isChecked ? '✓' : '';
+
+					const type = item.dataset.type!;
+					const value = item.dataset.value!;
+
+					if (type === 'topic') {
+						isChecked ? state.topics.add(value) : state.topics.delete(value);
+					} else if (type === 'series') {
+						isChecked ? state.series.add(value) : state.series.delete(value);
+					} else if (type === 'publisher') {
+						isChecked ? state.publishers.add(value) : state.publishers.delete(value);
+					}
+
+					// Update count badge on button
+					updateBadge('topics', state.topics.size + state.series.size);
+					updateBadge('publishers', state.publishers.size);
+
+					renderChips();
+					applyFilters();
+				});
+			});
+
+			function updateBadge(id: string, count: number) {
+				const btn = document.getElementById(`btn-${id}`);
+				if (!btn) return;
+				let badge = btn.querySelector<HTMLElement>('.count-badge');
+				if (count > 0) {
+					if (!badge) {
+						badge = document.createElement('span');
+						badge.className = 'count-badge';
+						btn.insertBefore(badge, btn.querySelector('.caret'));
+					}
+					badge.textContent = String(count);
+				} else {
+					badge?.remove();
+				}
+			}
+
+			// ─── Active Filter Chips ─────────────────────────────────
+			function renderChips() {
+				activeFiltersEl.innerHTML = '';
+				const hasSeries = state.series.size > 0;
+
+				state.series.forEach((s) => {
+					const chip = document.createElement('button');
+					chip.className = 'active-chip';
+					chip.innerHTML = `Series: ${s} <span class="x">✕</span>`;
+					chip.addEventListener('click', () => {
+						state.series.delete(s);
+						// Uncheck the corresponding dd-item
+						document.querySelectorAll<HTMLElement>('.dd-item[data-type="series"]').forEach((el) => {
+							if (el.dataset.value === s) {
+								el.classList.remove('checked');
+								el.querySelector('.dd-check')!.textContent = '';
+							}
+						});
+						updateBadge('topics', state.topics.size + state.series.size);
+						renderChips();
+						applyFilters();
+					});
+					activeFiltersEl.appendChild(chip);
+				});
+
+				if (activeFiltersEl.children.length > 0) {
+					activeFiltersEl.classList.add('visible');
+				} else {
+					activeFiltersEl.classList.remove('visible');
+				}
+			}
+
+			// ─── Clicking series tag on card ─────────────────────────
+			document.querySelectorAll<HTMLElement>('.tag.series').forEach((tag) => {
+				tag.addEventListener('click', (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					const seriesValue = tag.dataset.seriesValue!;
+					if (!state.series.has(seriesValue)) {
+						state.series.add(seriesValue);
+						// Mark the corresponding dd-item as checked
+						document.querySelectorAll<HTMLElement>('.dd-item[data-type="series"]').forEach((el) => {
+							if (el.dataset.value === seriesValue) {
+								el.classList.add('checked');
+								el.querySelector('.dd-check')!.textContent = '✓';
+							}
+						});
+						updateBadge('topics', state.topics.size + state.series.size);
+						renderChips();
+						applyFilters();
+					}
+				});
+			});
+
+			// ─── Filter Logic ────────────────────────────────────────
+			function applyFilters() {
+				let visibleCount = 0;
+				let firstVisible = true;
+
+				cards.forEach((card) => {
+					const cardLang = card.dataset.lang!;
+					const cardTopics: string[] = JSON.parse(card.dataset.topics ?? '[]');
+					const cardSeries: string[] = JSON.parse(card.dataset.series ?? '[]');
+					const cardPublishers: string[] = JSON.parse(card.dataset.publishers ?? '[]');
+
+					const langOk = state.lang === 'all' || cardLang === state.lang;
+					const topicOk = state.topics.size === 0 || cardTopics.some((t) => state.topics.has(t));
+					const seriesOk = state.series.size === 0 || cardSeries.some((s) => state.series.has(s));
+					const pubOk = state.publishers.size === 0 || cardPublishers.some((p) => state.publishers.has(p));
+
+					const visible = langOk && topicOk && seriesOk && pubOk;
+
+					if (visible) {
+						card.removeAttribute('data-hidden');
+						// Featured only for the first visible card
+						if (firstVisible) {
+							card.classList.add('featured');
+							firstVisible = false;
+						} else {
+							card.classList.remove('featured');
+						}
+						visibleCount++;
+					} else {
+						card.setAttribute('data-hidden', 'true');
+						card.classList.remove('featured');
+					}
+				});
+
+				emptyState.classList.toggle('visible', visibleCount === 0);
+			}
+
+			// ─── Handle ?series= URL param (from series bar in BlogPost) ───
+			const urlParams = new URLSearchParams(window.location.search);
+			const seriesParam = urlParams.get('series');
+			if (seriesParam) {
+				state.series.add(seriesParam);
+				// Mark matching dd-item as checked
+				document.querySelectorAll<HTMLElement>('.dd-item[data-type="series"]').forEach((el) => {
+					if (el.dataset.value === seriesParam) {
+						el.classList.add('checked');
+						el.querySelector('.dd-check')!.textContent = '✓';
+					}
+				});
+				updateBadge('topics', state.topics.size + state.series.size);
+				renderChips();
+				// Clean up URL without reloading
+				window.history.replaceState({}, '', '/');
+			}
+
+			// Initial run to ensure featured is correctly set
+			applyFilters();
+		</script>
 	</body>
 </html>

@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
@@ -8,49 +9,250 @@ import Header from '../components/Header.astro';
 
 type Props = CollectionEntry<'blog'>['data'];
 
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tagTopics, tagSeries, lang, publishedOn, author } = Astro.props;
+
+// Count how many posts share this series (for "N of M" display)
+let seriesTotal = 0;
+let seriesIndex = 0;
+const currentSeries = tagSeries?.[0];
+
+if (currentSeries) {
+	const allPosts = (await getCollection('blog')).sort(
+		(a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
+	);
+	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(currentSeries));
+	seriesTotal = postsInSeries.length;
+	// Find position by matching title (since we're inside a layout, not a collection entry)
+	const idx = postsInSeries.findIndex((p) => p.data.title === title);
+	seriesIndex = idx >= 0 ? idx + 1 : 1;
+}
+
+const publishedEntries = Object.entries(publishedOn ?? {});
+const hasSeries = currentSeries && seriesTotal > 0;
+
+const initials = author
+	.split(' ')
+	.map((w: string) => w[0])
+	.join('')
+	.toUpperCase()
+	.slice(0, 2);
 ---
 
-<html lang="en">
+<html lang={lang ?? 'en'}>
 	<head>
-		<BaseHead title={title} description={description} />
+		<BaseHead title={title} description={description} image={heroImage} />
 		<style>
+			/* ─── Layout ─────────────────────────────────────────── */
 			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: 0 auto;
+				padding: 2.5rem 1em 4rem;
 			}
+
+			/* ─── Back Button ────────────────────────────────────── */
+			.back-btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				color: var(--text2);
+				font-size: 13px;
+				cursor: pointer;
+				margin-bottom: 1.75rem;
+				border: none;
+				background: none;
+				padding: 0;
+				font-family: inherit;
+				text-decoration: none;
+			}
+			.back-btn:hover {
+				color: var(--accent);
+			}
+
+			/* ─── Hero Image ─────────────────────────────────────── */
 			.hero-image {
 				width: 100%;
+				margin-bottom: 1.75rem;
 			}
 			.hero-image img {
 				display: block;
-				margin: 0 auto;
+				width: 100%;
+				height: auto;
 				border-radius: 12px;
 				box-shadow: var(--box-shadow);
 			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
+
+			/* ─── Series Bar ─────────────────────────────────────── */
+			.series-bar {
+				background: var(--series-bg);
+				border-radius: 8px;
+				padding: 0.6rem 1rem;
+				margin-bottom: 1rem;
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				flex-wrap: wrap;
 			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				text-align: center;
-				line-height: 1;
+			.series-label {
+				font-size: 12px;
+				color: var(--series-text);
 			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
+			.series-link {
+				font-size: 12px;
+				color: var(--series-text);
+				font-weight: 500;
+				text-decoration: underline;
+				text-underline-offset: 2px;
 			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
+			.series-link:hover {
+				opacity: 0.8;
 			}
-			.last-updated-on {
+			.series-part {
+				font-size: 12px;
+				color: var(--series-text);
+				opacity: 0.7;
+				margin-left: auto;
+			}
+
+			/* ─── Tags ───────────────────────────────────────────── */
+			.article-tags {
+				display: flex;
+				gap: 5px;
+				flex-wrap: wrap;
+				margin-bottom: 10px;
+			}
+			.tag {
+				font-size: 11px;
+				padding: 2px 7px;
+				border-radius: 4px;
+			}
+			.tag.topic {
+				background: var(--tag-bg);
+				color: var(--tag-text);
+			}
+			.lang-badge {
+				background: var(--bg3);
+				color: var(--text2);
+				font-size: 11px;
+				padding: 2px 7px;
+				border-radius: 4px;
+				font-weight: 500;
+			}
+
+			/* ─── Title ──────────────────────────────────────────── */
+			.article-title {
+				font-size: clamp(1.6rem, 4vw, 2.2rem);
+				font-weight: 600;
+				line-height: 1.25;
+				margin-bottom: 1rem;
+				color: var(--text);
+			}
+
+			/* ─── Meta Bar ───────────────────────────────────────── */
+			.article-meta {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				flex-wrap: wrap;
+				border-top: 0.5px solid var(--border);
+				border-bottom: 0.5px solid var(--border);
+				padding: 10px 0;
+				margin-bottom: 2rem;
+			}
+			.avatar {
+				width: 28px;
+				height: 28px;
+				border-radius: 50%;
+				background: var(--tag-bg);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				font-size: 10px;
+				font-weight: 500;
+				color: var(--tag-text);
+				flex-shrink: 0;
+			}
+			.meta-author {
+				font-size: 13px;
+				color: var(--text);
+				font-weight: 500;
+			}
+			.meta-sep {
+				color: var(--border2);
+				font-size: 14px;
+			}
+			.meta-dates {
+				font-size: 12px;
+				color: var(--text2);
+			}
+			.meta-dates .upd {
 				font-style: italic;
+			}
+
+			/* ─── Prose ──────────────────────────────────────────── */
+			.prose {
+				font-size: 17px;
+				line-height: 1.8;
+				color: var(--text);
+			}
+			.prose :global(p) {
+				margin-bottom: 1.5rem;
+			}
+			.prose :global(h2),
+			.prose :global(h3),
+			.prose :global(h4) {
+				margin-top: 2rem;
+				margin-bottom: 0.75rem;
+				color: var(--text);
+			}
+			.prose :global(a) {
+				color: var(--accent);
+			}
+			.prose :global(img) {
+				border-radius: 8px;
+				max-width: 100%;
+			}
+			.prose :global(pre) {
+				border-radius: 8px;
+				overflow-x: auto;
+			}
+			.prose :global(blockquote) {
+				border-left: 3px solid var(--accent);
+				padding-left: 1rem;
+				color: var(--text2);
+				font-style: italic;
+			}
+
+			/* ─── Published On ───────────────────────────────────── */
+			.published-box {
+				background: var(--bg2);
+				border-radius: 8px;
+				padding: 0.875rem 1.25rem;
+				margin-top: 2.5rem;
+			}
+			.published-box-title {
+				font-size: 12px;
+				font-weight: 500;
+				color: var(--text2);
+				margin-bottom: 8px;
+			}
+			.pub-links {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+			.pub-link {
+				background: var(--pub-bg);
+				color: var(--pub-text);
+				font-size: 12px;
+				padding: 4px 12px;
+				border-radius: 6px;
+				text-decoration: none;
+				transition: opacity 0.15s;
+			}
+			.pub-link:hover {
+				opacity: 0.8;
+				color: var(--pub-text);
 			}
 		</style>
 	</head>
@@ -58,28 +260,77 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 	<body>
 		<Header />
 		<main>
-			<article>
+			<!-- Back to blog -->
+			<a href="/" class="back-btn">← Back to blog</a>
+
+			<!-- Hero Image -->
+			{heroImage && (
 				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
+					<Image width={1200} height={630} src={heroImage} alt="" />
 				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
-									</div>
-								)
-							}
-						</div>
-						<h1>{title}</h1>
-						<hr />
+			)}
+
+			<!-- Series Bar (only if has series) -->
+			{hasSeries && (
+				<div class="series-bar">
+					<span class="series-label">Part of series:</span>
+					<a
+						class="series-link"
+						href={`/?series=${encodeURIComponent(currentSeries)}`}
+					>
+						{currentSeries}
+					</a>
+					<span class="series-part">{seriesIndex} of {seriesTotal}</span>
+				</div>
+			)}
+
+			<!-- Tags -->
+			<div class="article-tags">
+				{(tagTopics ?? []).map((t: string) => (
+					<span class="tag topic">{t}</span>
+				))}
+				<span class="lang-badge">{(lang ?? 'en').toUpperCase()}</span>
+			</div>
+
+			<!-- Title -->
+			<h1 class="article-title">{title}</h1>
+
+			<!-- Meta: author + dates -->
+			<div class="article-meta">
+				<div class="avatar">{initials}</div>
+				<span class="meta-author">{author}</span>
+				<span class="meta-sep">·</span>
+				<div class="meta-dates">
+					<div>Published <FormattedDate date={pubDate} /></div>
+					{updatedDate && (
+						<div class="upd">Updated <FormattedDate date={updatedDate} /></div>
+					)}
+				</div>
+			</div>
+
+			<!-- Article Content -->
+			<div class="prose">
+				<slot />
+			</div>
+
+			<!-- Also Published On (only if publishedOn has entries) -->
+			{publishedEntries.length > 0 && (
+				<div class="published-box">
+					<div class="published-box-title">Also published on</div>
+					<div class="pub-links">
+						{publishedEntries.map(([name, url]) => (
+							<a
+								class="pub-link"
+								href={url}
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								{name} →
+							</a>
+						))}
 					</div>
-					<slot />
 				</div>
-			</article>
+			)}
 		</main>
 		<Footer />
 	</body>

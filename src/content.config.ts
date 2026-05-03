@@ -14,11 +14,11 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: z.optional(image()),
-			tagTopics: z.array(z.string()).default(['General']),
-			tagSeries: z.optional(z.array(z.string())),
-			tagLevels: z.optional(z.array(z.string())),
+			tagTopics: z.array(z.string()).default(['General']), // Example: ["Astro", "Web Dev", "Engineering Excellence"]
+			tagSeries: z.optional(z.array(z.string())), // Editorial convention: max 1 series per article. Example: ["Building PikoMo", "Intro to Programming"]
 			lang: z.enum(['id', 'en']).default('en'),
-			publishedOn: z.record(z.string(), z.string()).optional(), // Example: { medium: "url" }
+			publishedOn: z.record(z.string(), z.string()).optional(), // Example: { medium: "url", devto: "url", ... }
+			author: z.string().default('Piko Monde'),
 		}),
 });
 
