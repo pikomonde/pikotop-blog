@@ -18,6 +18,7 @@ const blog = defineCollection({
 			tagSeries: z.optional(z.array(z.string())), // Editorial convention: max 1 series per article. Example: ["Building PikoMo", "Intro to Programming"]
 			lang: z.enum(['id', 'en']).default('en'),
 			publishedOn: z.record(z.string(), z.string()).optional(), // Example: { medium: "url", devto: "url", ... }
+			draft: z.boolean().default(false),
 			author: z.string().default('Piko Monde'),
 		}),
 });

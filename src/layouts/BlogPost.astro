@@ -17,9 +17,9 @@ let seriesIndex = 0;
 const currentSeries = tagSeries?.[0];
 
 if (currentSeries) {
-	const allPosts = (await getCollection('blog')).sort(
-		(a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf(),
-	);
+	const allPosts = (await getCollection('blog'))
+		.filter((p) => !p.data.draft)
+		.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
 	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(currentSeries));
 	seriesTotal = postsInSeries.length;
 	// Find position by matching title (since we're inside a layout, not a collection entry)
