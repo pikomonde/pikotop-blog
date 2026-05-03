@@ -11,24 +11,59 @@ type Props = CollectionEntry<'blog'>['data'];
 
 const { title, description, pubDate, updatedDate, heroImage, tagTopics, tagSeries, lang, publishedOn, author } = Astro.props;
 
-// Count how many posts share this series (for "N of M" display)
+const allPosts = (await getCollection('blog'))
+	.filter((p) => !p.data.draft)
+	.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+// ── Series ────────────────────────────────────────────────────────
+// Count how many posts share this series, and find this post's position.
+
 let seriesTotal = 0;
 let seriesIndex = 0;
 const currentSeries = tagSeries?.[0];
 
 if (currentSeries) {
-	const allPosts = (await getCollection('blog'))
-		.filter((p) => !p.data.draft)
-		.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
 	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(currentSeries));
 	seriesTotal = postsInSeries.length;
-	// Find position by matching title (since we're inside a layout, not a collection entry)
+	// Match by title since we're inside a layout, not a collection entry.
 	const idx = postsInSeries.findIndex((p) => p.data.title === title);
 	seriesIndex = idx >= 0 ? idx + 1 : 1;
 }
 
-const publishedEntries = Object.entries(publishedOn ?? {});
 const hasSeries = currentSeries && seriesTotal > 0;
+
+// ── Related / Recommended Posts ───────────────────────────────────
+// Scoring priority: same series (10pts) > topic overlap (3pts each) > recency boost.
+// Recency is based on position in the sorted allPosts array (most recent = last),
+// so we reverse the array first to give index 0 = most recent post.
+
+const others = allPosts
+	.filter((p) => p.data.title !== title)
+	.reverse(); // most recent first for recency scoring
+
+const related = others
+	.map((p, index) => {
+		let score = 0;
+
+		// Same series → highest priority
+		if (p.data.tagSeries?.some((s) => tagSeries?.includes(s))) score += 5;
+
+		// Topic tag overlap
+		const overlap = p.data.tagTopics.filter((t) => tagTopics?.includes(t)).length;
+		score += overlap * 3;
+
+		// Recency boost: top 7 most recent posts get a small bump
+		if (index < 7) score += (7 - index) * 1.5;
+
+		return { post: p, score };
+	})
+	.sort((a, b) => b.score - a.score)
+	.slice(0, 3)
+	.map((s) => s.post);
+
+// ── Published Entries ─────────────────────────────────────────────
+
+const publishedEntries = Object.entries(publishedOn ?? {});
 
 const initials = author
 	.split(' ')
@@ -254,6 +289,114 @@ const initials = author
 				opacity: 0.8;
 				color: var(--pub-text);
 			}
+
+			/* ─── Related Posts ──────────────────────────────────── */
+			.related-section {
+				margin-top: 3rem;
+				padding-top: 2rem;
+				border-top: 0.5px solid var(--border);
+			}
+			.related-title {
+				font-size: 13px;
+				font-weight: 500;
+				color: var(--text2);
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				margin-bottom: 1rem;
+			}
+			.related-grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+				gap: 0.875rem;
+			}
+			.related-card {
+				background: var(--bg);
+				border: 0.5px solid var(--border);
+				border-radius: 10px;
+				overflow: hidden;
+				text-decoration: none;
+				color: inherit;
+				display: flex;
+				flex-direction: column;
+				transition: border-color 0.2s, box-shadow 0.2s;
+			}
+			.related-card:hover {
+				border-color: var(--accent);
+				box-shadow: 0 4px 16px rgba(35, 55, 255, 0.08);
+			}
+			.related-card.in-series {
+				border-left: 3px solid var(--series-text);
+			}
+			.related-img {
+				width: 100%;
+				aspect-ratio: 16 / 9;
+				overflow: hidden;
+				background: var(--bg3);
+				flex-shrink: 0;
+			}
+			.related-img img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				border-radius: 0;
+				display: block;
+			}
+			.related-img-placeholder {
+				width: 100%;
+				height: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				color: var(--text3);
+				font-size: 10px;
+			}
+			.related-body {
+				padding: 0.75rem;
+				flex: 1;
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+			.related-meta {
+				display: flex;
+				gap: 4px;
+				flex-wrap: wrap;
+			}
+			.related-tag {
+				font-size: 10px;
+				padding: 1px 6px;
+				border-radius: 3px;
+			}
+			.related-tag.topic {
+				background: var(--tag-bg);
+				color: var(--tag-text);
+			}
+			.related-tag.series {
+				background: var(--series-bg);
+				color: var(--series-text);
+			}
+			.related-post-title {
+				font-size: 13px;
+				font-weight: 500;
+				line-height: 1.4;
+				color: var(--text);
+				display: -webkit-box;
+				-webkit-line-clamp: 2;
+				-webkit-box-orient: vertical;
+				overflow: hidden;
+			}
+			.related-date {
+				font-size: 11px;
+				color: var(--text3);
+				margin-top: auto;
+			}
+
+			/* ─── Responsive ─────────────────────────────────────── */
+			@media (max-width: 720px) {
+				.related-grid {
+					grid-template-columns: 1fr;
+				}
+			}
 		</style>
 	</head>
 
@@ -328,6 +471,46 @@ const initials = author
 								{name} →
 							</a>
 						))}
+					</div>
+				</div>
+			)}
+
+			<!-- Related / Recommended Posts -->
+			{related.length > 0 && (
+				<div class="related-section">
+					<div class="related-title">Recommended</div>
+					<div class="related-grid">
+						{related.map((p) => {
+							const hasSeries = p.data.tagSeries && p.data.tagSeries.length > 0;
+							return (
+								<a
+									href={`/${p.id}/`}
+									class:list={['related-card', { 'in-series': hasSeries }]}
+								>
+									<div class="related-img">
+										{p.data.heroImage ? (
+											<Image width={400} height={225} src={p.data.heroImage} alt="" />
+										) : (
+											<div class="related-img-placeholder">No image</div>
+										)}
+									</div>
+									<div class="related-body">
+										<div class="related-meta">
+											{hasSeries && p.data.tagSeries!.map((s: string) => (
+												<span class="related-tag series">{s}</span>
+											))}
+											{p.data.tagTopics.slice(0, 2).map((t: string) => (
+												<span class="related-tag topic">{t}</span>
+											))}
+										</div>
+										<div class="related-post-title">{p.data.title}</div>
+										<div class="related-date">
+											<FormattedDate date={p.data.pubDate} />
+										</div>
+									</div>
+								</a>
+							);
+						})}
 					</div>
 				</div>
 			)}
