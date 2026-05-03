@@ -26,6 +26,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 64000
           script: |
             find /home/pikomoto/blog.pikomo.top/ -mindepth 1 \
               ! -name '.htaccess*' \
@@ -46,3 +47,4 @@ jobs:
           remote_host: ${{ secrets.SSH_HOST }}
           remote_user: ${{ secrets.SSH_USER }}
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          remote_port: 64000
