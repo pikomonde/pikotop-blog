@@ -1,0 +1,109 @@
+<svg width="100%" viewBox="0 0 1200 630" role="img" xmlns="http://www.w3.org/2000/svg" style=""><defs><mask id="imagine-text-gaps-hb253v" maskUnits="userSpaceOnUse">
+  <rect x="0" y="0" width="1200" height="630" fill="black"/>
+  <rect x="72" y="546" width="231.97499084472656" height="19" fill="black" rx="2"/>
+  <rect x="72" y="508" width="242.81248474120094" height="20.25" fill="black" rx="2"/>
+  <rect x="72" y="471" width="313.2562561035156" height="20.25" fill="black" rx="2"/>
+  <rect x="72" y="434" width="219.3312530517578" height="20.25" fill="black" rx="2"/>
+  <rect x="948" y="435" width="109.1500015258789" height="19" fill="black" rx="2"/>
+  <rect x="72" y="394.875" width="287.42034912009375" height="24.16666603088379" fill="black" rx="2"/>
+  <rect x="72" y="360" width="188.0229034423828" height="20.25" fill="black" rx="2"/>
+  <rect x="72" y="323" width="148.8874969482422" height="20.25" fill="black" rx="2"/>
+  <rect x="72" y="287" width="130.8249969482422" height="19" fill="black" rx="2"/>
+  <rect x="492" y="287" width="130.8249969482422" height="19" fill="black" rx="2"/>
+  <rect x="72" y="250" width="65.79999923706055" height="19" fill="black" rx="2"/>
+  <rect x="280" y="250" width="80.25" height="19" fill="black" rx="2"/>
+  <rect x="492" y="250" width="73.02499389648438" height="19" fill="black" rx="2"/>
+  <rect x="702" y="250" width="80.25" height="19" fill="black" rx="2"/>
+  <rect x="1009.605224609375" y="346" width="62.789581298828125" height="20.25" fill="black" rx="2"/>
+  <rect x="56" y="64.55555725097656" width="303.21759033203125" height="20.80555534362793" fill="black" rx="2"/>
+  <rect x="56" y="86" width="231.97499084472656" height="19" fill="black" rx="2"/>
+  <rect x="56" y="124.3888931274414" width="159.75416564941406" height="47.69444274902344" fill="black" rx="2"/>
+  <rect x="56" y="167" width="283.2749938964844" height="20.25" fill="black" rx="2"/>
+  <rect x="357.5692138671875" y="131.11111450195312" width="24.861574172973633" height="37.61111068725586" fill="black" rx="2"/>
+  <rect x="406" y="124.3888931274414" width="246.4708251953125" height="47.69444274902344" fill="black" rx="2"/>
+  <rect x="406" y="167" width="283.2749938964844" height="20.25" fill="black" rx="2"/></mask></defs>
+
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Decorative flamegraph hero image — IoT service optimization</title>
+  <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">A stylized Go flamegraph growing bottom-up, showing bcrypt dominating CPU at the top of the call stack. Dark background with amber-to-orange flame colors.</desc>
+
+
+  <rect width="1200" height="630" style="fill:rgb(15, 18, 25);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- grid lines -->
+  <line x1="60" y1="220" x2="1140" y2="220" stroke="rgba(255,255,255,0.04)" stroke-width="1" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="270" x2="1140" y2="270" stroke="rgba(255,255,255,0.04)" stroke-width="1" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="320" x2="1140" y2="320" stroke="rgba(255,255,255,0.04)" stroke-width="1" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="370" x2="1140" y2="370" stroke="rgba(255,255,255,0.04)" stroke-width="1" mask="url(#imagine-text-gaps-hb253v)" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="420" x2="1140" y2="420" stroke="rgba(255,255,255,0.04)" stroke-width="1" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="470" x2="1140" y2="470" stroke="rgba(255,255,255,0.04)" stroke-width="1" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="60" y1="520" x2="1140" y2="520" stroke="rgba(255,255,255,0.04)" stroke-width="1" mask="url(#imagine-text-gaps-hb253v)" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.04);color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- ── FLAMEGRAPH: bottom = root, top = deepest ── -->
+
+  <!-- Row 1 (bottom) — runtime root -->
+  <rect x="60" y="538" width="1080" height="34" fill="#1a2040" rx="2" style="fill:rgb(26, 32, 64);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="560" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">runtime.goexit · goroutine root</text>
+
+  <!-- Row 2 -->
+  <rect x="60" y="501" width="1080" height="34" fill="#1e2a50" rx="2" style="fill:rgb(30, 42, 80);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="523" style="fill:rgba(255, 255, 255, 0.72);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">net/http.(*ServeMux).ServeHTTP</text>
+
+  <!-- Row 3 -->
+  <rect x="60" y="464" width="1076" height="34" fill="#22346a" rx="2" style="fill:rgb(34, 52, 106);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="486" style="fill:rgba(255, 255, 255, 0.72);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">middleware.Chain → IoTMiddleware.Handle</text>
+
+  <!-- Row 4 — token validation + other -->
+  <rect x="60" y="427" width="870" height="34" fill="#2337b0" rx="2" style="fill:rgb(35, 55, 176);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="449" style="fill:rgba(255, 255, 255, 0.72);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">auth.ValidateTelemetryToken</text>
+  <rect x="940" y="427" width="200" height="34" fill="#1e4a30" rx="2" style="fill:rgb(30, 74, 48);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="952" y="449" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">other handlers</text>
+
+  <!-- Row 5 — bcrypt DOMINANT -->
+  <rect x="60" y="390" width="860" height="34" fill="#e05c00" rx="2" style="fill:rgb(224, 92, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="412" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:16px;font-weight:600;text-anchor:start;dominant-baseline:auto">bcrypt.CompareHashAndPassword</text>
+  <rect x="930" y="390" width="110" height="34" fill="#1e4a30" rx="2" style="fill:rgb(30, 74, 48);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="1050" y="390" width="90" height="34" fill="#2a1a50" rx="2" style="fill:rgb(42, 26, 80);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+
+  <!-- Row 6 — bcrypt internals -->
+  <rect x="60" y="353" width="852" height="34" fill="#cc4800" rx="2" style="fill:rgb(204, 72, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="375" style="fill:rgba(255, 255, 255, 0.72);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">bcrypt.bcrypt · cost=12</text>
+
+  <!-- Row 7 — blowfish -->
+  <rect x="60" y="316" width="840" height="34" fill="#b03800" rx="2" style="fill:rgb(176, 56, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="338" style="fill:rgba(255, 255, 255, 0.72);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">blowfish.ExpandKey</text>
+
+  <!-- Row 8 — two branches -->
+  <rect x="60" y="279" width="415" height="34" fill="#8a2800" rx="2" style="fill:rgb(138, 40, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="301" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">expandKeyWithSalt</text>
+  <rect x="482" y="279" width="416" height="34" fill="#8a2800" rx="2" style="fill:rgb(138, 40, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="496" y="301" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">encryptBlock × 64</text>
+
+  <!-- Row 9 — leaf fragments (top, narrowest) -->
+  <rect x="60" y="242" width="204" height="34" fill="#5a1800" rx="2" style="fill:rgb(90, 24, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="76" y="264" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">xorWords</text>
+  <rect x="270" y="242" width="204" height="34" fill="#5a1800" rx="2" style="fill:rgb(90, 24, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="284" y="264" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">cryptBlock</text>
+  <rect x="482" y="242" width="204" height="34" fill="#5a1800" rx="2" style="fill:rgb(90, 24, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="496" y="264" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">expandKey</text>
+  <rect x="692" y="242" width="204" height="34" fill="#5a1800" rx="2" style="fill:rgb(90, 24, 0);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="706" y="264" style="fill:rgba(255, 255, 255, 0.38);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">initCipher</text>
+
+  <!-- callout highlight on bcrypt row -->
+  <rect x="60" y="386" width="860" height="42" fill="none" stroke="#ff7a30" stroke-width="2" rx="3" stroke-dasharray="6 4" opacity="0.75" style="fill:none;stroke:rgb(255, 122, 48);color:rgb(0, 0, 0);stroke-width:2px;stroke-dasharray:6px, 4px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.75;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <line x1="920" y1="407" x2="1000" y2="360" stroke="#ff7a30" stroke-width="1.5" opacity="0.6" style="fill:rgb(0, 0, 0);stroke:rgb(255, 122, 48);color:rgb(0, 0, 0);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.6;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <rect x="996" y="344" width="90" height="24" fill="#ff7a30" rx="3" opacity="0.15" style="fill:rgb(255, 122, 48);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:0.15;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
+  <text x="1041" y="361" text-anchor="middle" style="fill:rgb(255, 122, 48);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:700;text-anchor:middle;dominant-baseline:auto">82% CPU</text>
+
+  <!-- top label + axis hint -->
+  <text x="60" y="80" style="fill:rgb(35, 55, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:14px;font-weight:600;text-anchor:start;dominant-baseline:auto">FLAMEGRAPH — PRODUCTION PROFILE</text>
+  <text x="60" y="100" style="fill:rgba(255, 255, 255, 0.28);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:12px;font-weight:400;text-anchor:start;dominant-baseline:auto">call stack depth ↑ · cpu time →</text>
+
+  <!-- stats -->
+  <text x="60" y="160" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:36px;font-weight:700;text-anchor:start;dominant-baseline:auto">200 RPS</text>
+  <text x="60" y="182" style="fill:rgba(255, 255, 255, 0.4);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">27 × c6g.16xlarge · ~$42,000 / mo</text>
+
+  <text x="370" y="160" text-anchor="middle" style="fill:rgb(35, 55, 255);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:28px;font-weight:400;text-anchor:middle;dominant-baseline:auto">→</text>
+
+  <text x="410" y="160" style="fill:rgb(61, 220, 132);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:36px;font-weight:700;text-anchor:start;dominant-baseline:auto">20,000+ RPS</text>
+  <text x="410" y="182" style="fill:rgba(61, 220, 132, 0.65);stroke:none;color:rgb(0, 0, 0);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:monospace;font-size:13px;font-weight:400;text-anchor:start;dominant-baseline:auto">2 instances · 90%+ cost reduction</text>
+</svg>

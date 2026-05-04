@@ -152,6 +152,17 @@ img {
 	border-radius: 8px;
 }
 
+figure {
+  margin: 0;
+}
+
+figcaption {
+  font-size: 13px;
+  color: var(--text3);
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
 /* ─── Code ───────────────────────────────────────────────────────── */
 code {
 	padding: 2px 5px;
