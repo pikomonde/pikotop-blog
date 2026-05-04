@@ -235,7 +235,7 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 - **Canonical URL:** `new URL(Astro.url.pathname, Astro.site)` — merujuk ke dirinya sendiri, aman
 - `Astro.site` diambil dari `astro.config.mjs` → wajib diset: `site: 'https://blog.pikomo.top'`
 - Hero image dipakai sebagai `og:image` — fallback ke `computer-programming-min-300x200.jpeg`
-- **Page title format:** `[Judul Artikel] | PikoMo` untuk artikel, `PikoMo` saja untuk homepage
+- **Page title format:** `[Judul Artikel] | PikoMo Blog` untuk artikel, `PikoMo Blog` saja untuk homepage
   - Implementasi di `BaseHead.astro`: `const fullTitle = title === SITE_TITLE ? SITE_TITLE : \`${title} | ${SITE_TITLE}\``
 
 ### RSS (`rss.xml.js`)
@@ -245,7 +245,7 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 
 ### `consts.ts`
 ```ts
-export const SITE_TITLE = 'PikoMo';
+export const SITE_TITLE = 'PikoMo Blog';
 export const SITE_DESCRIPTION = 'Software development, programming, and technology insights from PikoMo.';
 ```
 
@@ -267,7 +267,6 @@ export const SITE_DESCRIPTION = 'Software development, programming, and technolo
 - [ ] Tag `NEW` — artikel yang baru publish (misal dalam 7 hari terakhir) mendapat badge NEW di kartu
 - [x] Related articles — sudah diimplementasi di `BlogPost.astro`. Scoring: same series (5pts) + topic overlap (3pts each) + recency boost top-7 (1.5pts per rank). Maks 3 artikel.
 - [x] **RSS filter draft** — `rss.xml.js` belum filter `draft: true`, artikel draft bisa bocor ke feed. Fix: tambah `.filter((p) => !p.data.draft)` sebelum mapping.
-- [ ] **Draft URL protection** — `[...slug].astro` tidak filter draft, jadi artikel draft masih bisa diakses langsung via URL kalau tau slug-nya. Pertimbangkan apakah perlu di-block atau dibiarkan (by design).
 
 ---
 

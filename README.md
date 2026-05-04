@@ -82,10 +82,3 @@ Set these in your GitHub repo → Settings → Secrets:
 | `SSH_PRIVATE_KEY` | Private key contents |
 
 ---
-
-## TODO
-
-- [ ] Update favicon — current favicon is the default Astro SVG
-- [ ] Migrate styling to Tailwind utility classes — currently using scoped `<style>` blocks per component
-- [ ] Badge `NEW` — posts published within the last 7 days get a NEW badge on their card
-- [ ] Related articles — tampilkan maks 3 artikel rekomendasi di bawah konten artikel (setelah "Also published on"). Prioritas: (1) artikel seseries, (2) artikel dengan topic tag overlap terbanyak, (3) artikel terbaru. Implementasi statis di `BlogPost.astro` saat build.

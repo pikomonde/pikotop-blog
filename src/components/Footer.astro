@@ -1,11 +1,13 @@
 ---
+import { SITE_TITLE } from '../consts';
+
 const today = new Date();
 ---
 
 <footer>
 	<div class="footer-inner">
-		<span class="footer-brand">PikoMo Blog</span>
-		<span class="footer-copy">&copy; {today.getFullYear()} PikoMo Blog. All rights reserved.</span>
+		<span class="footer-brand">{SITE_TITLE}</span>
+		<span class="footer-copy">&copy; {today.getFullYear()} {SITE_TITLE}. All rights reserved.</span>
 	</div>
 </footer>
 
