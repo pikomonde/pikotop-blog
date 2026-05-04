@@ -337,3 +337,28 @@ jobs:
 - **Halaman Series dedicated** (`/series/[name]`) — saat ini klik series = filter di homepage. Bisa jadi fitur v2.
 - **Search** — belum dibahas, bisa jadi fitur v2.
 - **`tagSeries` sebagai folder/collection** — ide untuk nanti, belum diimplementasi.
+
+---
+
+## Konvensi Cross-Posting
+
+Saat mempublikasikan artikel di platform lain (Medium, Dev.to, dll.), selalu sertakan dua blok teks berikut:
+
+### Di awal artikel (canonical notice)
+
+> *Originally published on [blog.pikomo.top](https://blog.pikomo.top)*
+
+Taruh tepat sebelum paragraf pertama, sesudah judul/subtitle platform.
+
+### Di akhir artikel (CTA)
+
+> *If this was useful, find more posts at [blog.pikomo.top](https://blog.pikomo.top) — or connect on [LinkedIn](https://linkedin.com/in/piko-monde) · [GitHub](https://github.com/pikomonde) · [Ko-fi](https://ko-fi.com/pikomonde)*
+
+Taruh setelah paragraf terakhir konten, sebelum tag/topic platform.
+
+### Catatan
+
+- Cukup link ke `blog.pikomo.top` saja — tidak perlu link ke artikel spesifik lain
+- Tidak perlu tambah link `/support` di CTA artikel — terlalu banyak pilihan justru mengurangi konversi
+- Canonical URL di settings platform (Medium: "Import story" atau canonical field, Dev.to: `canonical_url` di frontmatter) tetap wajib diset ke URL artikel spesifik di blog
+
