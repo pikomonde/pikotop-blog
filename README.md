@@ -1,4 +1,4 @@
-# Piko Monde Blog
+# PikoMo Blog
 
 [![Deploy Blog](https://github.com/pikomonde/pikotop-blog/actions/workflows/deploy.yml/badge.svg)](https://github.com/pikomonde/pikotop-blog/actions/workflows/deploy.yml)
 

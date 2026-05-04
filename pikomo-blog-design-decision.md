@@ -1,13 +1,13 @@
-# Piko Monde Blog — Design Decision Summary
+# PikoMo Blog — Design Decision Summary
 
-Ini adalah briefing untuk melanjutkan coding blog Astro milik Piko Monde.
+Ini adalah briefing untuk melanjutkan coding blog Astro milik PikoMo.
 Bawa file ini ke chat baru sebagai konteks awal.
 
 ---
 
 ## Tentang Blog
 
-- **Nama:** Piko Monde Blog
+- **Nama:** PikoMo Blog
 - **URL:** blog.pikomo.top
 - **Stack:** Astro + Tailwind CSS + MDX
 - **Tujuan:** Blog personal software engineering, juga dipakai sebagai canonical source untuk cross-posting ke Medium, Dev.to, Towards Data Science, The Startup, dll.
@@ -223,7 +223,7 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 
 ## Keputusan Desain: Header & Footer
 
-- **Header:** Logo "Piko Monde" (link ke `/`) di kiri, dark mode toggle di kanan. Tidak ada nav links.
+- **Header:** Logo "PikoMo" (link ke `/`) di kiri, dark mode toggle di kanan. Tidak ada nav links.
 - **Footer:** Brand name kiri, copyright kanan. Tidak ada social links.
 - Halaman `/about` tidak ada — tidak dipakai.
 
@@ -235,7 +235,7 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 - **Canonical URL:** `new URL(Astro.url.pathname, Astro.site)` — merujuk ke dirinya sendiri, aman
 - `Astro.site` diambil dari `astro.config.mjs` → wajib diset: `site: 'https://blog.pikomo.top'`
 - Hero image dipakai sebagai `og:image` — fallback ke `computer-programming-min-300x200.jpeg`
-- **Page title format:** `[Judul Artikel] | Piko Monde` untuk artikel, `Piko Monde` saja untuk homepage
+- **Page title format:** `[Judul Artikel] | PikoMo` untuk artikel, `PikoMo` saja untuk homepage
   - Implementasi di `BaseHead.astro`: `const fullTitle = title === SITE_TITLE ? SITE_TITLE : \`${title} | ${SITE_TITLE}\``
 
 ### RSS (`rss.xml.js`)
@@ -245,8 +245,8 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 
 ### `consts.ts`
 ```ts
-export const SITE_TITLE = 'Piko Monde';
-export const SITE_DESCRIPTION = 'Software development, programming, and technology insights from Piko Monde.';
+export const SITE_TITLE = 'PikoMo';
+export const SITE_DESCRIPTION = 'Software development, programming, and technology insights from PikoMo.';
 ```
 
 ---

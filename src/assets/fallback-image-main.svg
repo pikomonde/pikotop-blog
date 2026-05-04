@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 1200 630" role="img" style="">
-  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Piko Monde OG Image</title>
+  <title style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">PikoMo OG Image</title>
   <desc style="fill:rgb(0, 0, 0);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto">Open Graph image — blue to orange gradient, bold grid, high contrast text</desc>
 
   <defs>
@@ -95,7 +95,7 @@
   <line x1="790" y1="196" x2="1060" y2="196" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.35);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
 
   <!-- Main title — naik dari 360 ke 310 -->
-  <text x="600" y="310" font-family="sans-serif" font-weight="700" font-size="124" text-anchor="middle" dominant-baseline="central" fill="#ffffff" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:sans-serif;font-size:124px;font-weight:700;text-anchor:middle;dominant-baseline:central">Piko Monde</text>
+  <text x="600" y="310" font-family="sans-serif" font-weight="700" font-size="124" text-anchor="middle" dominant-baseline="central" fill="#ffffff" style="fill:rgb(255, 255, 255);stroke:none;color:rgb(255, 255, 255);stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:sans-serif;font-size:124px;font-weight:700;text-anchor:middle;dominant-baseline:central">PikoMo</text>
 
   <!-- Divider bawah judul -->
   <line x1="400" y1="378" x2="800" y2="378" stroke="rgba(255,255,255,0.25)" stroke-width="1.5" mask="url(#imagine-text-gaps-zmuyqu)" style="fill:rgb(0, 0, 0);stroke:rgba(255, 255, 255, 0.25);color:rgb(255, 255, 255);stroke-width:1.5px;stroke-linecap:butt;stroke-linejoin:miter;opacity:1;font-family:&quot;Anthropic Sans&quot;, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif;font-size:16px;font-weight:400;text-anchor:start;dominant-baseline:auto"/>
