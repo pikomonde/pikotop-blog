@@ -2,7 +2,8 @@
 title: "How We Saved a High-Traffic IoT Service from 200 RPS to 20,000+ RPS (and a $42k+ AWS Bill)"
 description: "How I diagnosed and fixed a self-inflicted DDoS caused by Bcrypt on a hot path — reducing a 27-node AWS cluster to just two instances and cutting $42k+/month in cloud costs."
 pubDate: "2026-05-04"
-heroImage: "../../assets/how-we-saved-iot-service-200-to-20000-rps/bcrypt-hotpath-flamegraph-iot-optimization-1200x630.svg"
+updatedDate: "2026-05-05"
+# heroImage: "../../assets/how-we-saved-iot-service-200-to-20000-rps/go-iot-performance-optimization-bcrypt-hotpath.jpg"
 tagTopics: ["Go", "Performance", "Backend", "IoT"]
 lang: "en"
 # publishedOn:
@@ -13,37 +14,28 @@ author: "Piko Monde"
 ---
 
 import { Image } from 'astro:assets';
-import imgFlamegraph from '../../assets/how-we-saved-iot-service-200-to-20000-rps/bcrypt-hotpath-flamegraph-iot-optimization-1200x630.svg';
+// import imgFlamegraphA from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-rbac-json-unmarshal-go.png';
+// import imgFlamegraphB from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-bcrypt-hotpath-cpu-saturation.png';
+// import imgThisIsFine from '../../assets/how-we-saved-iot-service-200-to-20000-rps/this-is-fine-meme-self-inflicted-ddos.jpg';
+import imgArchDiagram from '../../assets/how-we-saved-iot-service-200-to-20000-rps/request-flow-before-after-bcrypt-cache-singleflight.svg';
 
 In the world of high-concurrency systems, throwing more hardware at a problem is often the most expensive way to fail. Recently, I revisited some investigation logs and Go pprof profiles from a project I handled four years ago as a contractor for an Automobile IoT company. At the time, the company was managing telemetry for tens of thousands of connected vehicles.
 
 The service was struggling with massive CPU utilization and scaling issues. Despite being backed by a significant cloud budget, the infrastructure was buckling under a load that, on paper, should have been manageable. This is a story of how we moved from a state of "throwing money at the fire" to a lean, high-performance architecture.
 
-<figure>
-  <Image
-    src={imgFlamegraph}
-    alt="Go pprof flamegraph showing bcrypt.CompareHashAndPassword consuming 82% CPU on a high-traffic IoT telemetry service"
-    width={1200}
-    height={630}
-  />
-  <figcaption>
-    Go pprof flamegraph — bcrypt.CompareHashAndPassword consuming 82% of total CPU time on a production IoT telemetry service handling thousands of connected vehicles.
-  </figcaption>
-</figure>
-
-## The Infrastructure Bottleneck: 27 Nodes for 200 RPS
+## The Infrastructure Bottleneck: Roughly 27 Nodes for 200 RPS
 
 My first task at this company was to optimize our gateway server. Since I was a contractor and didn't have direct access yet, the Engineering Lead and I sat down to review the dashboard together. When he showed me the infrastructure, I was floored.
 
-The service was running on a cluster of **27 AWS c6g.16xlarge instances**. Each of these has 64 vCPUs. If you do the math manually, even without seeing the billing console, that's roughly **$42,000 USD per month** just for this layer. Worse, the CPU usage across all 27 nodes was pegged at 90%+.
+The service was running on a cluster of roughly **27 large compute instances** on AWS. As a contractor I wasn't shown the billing console directly, but back-of-the-envelope math told the story: at on-demand pricing for large compute-optimized instances (I'm using c6g.16xlarge for this calculation), this cluster was burning somewhere **north of $42,000 a month** — for this one service layer alone. Worse, CPU usage across all nodes was pegged at 90%+.
 
 The Engineering Manager felt his hands were tied; his schedule was packed with meetings, and the rest of the team was primarily focused on DevOps. I was essentially the only one available and specifically hired to fix this mess. Looking at the code, the EM had a hunch: *"I think it's the RBAC logic, especially when unmarshalling the user entity from Redis cache."*
 
 ## Identifying the Bottleneck: A Lesson in Profiling
 
-To understand why 1,700+ vCPUs couldn't handle a measly 200 RPS, I started my investigation using API call samples provided by one of the DevOps engineers.
+To understand why a cluster that large couldn't handle a measly 200 RPS, I started my investigation using API call samples provided by one of the DevOps engineers.
 
-### Setting up the Observability
+### Setting Up Observability
 
 I implemented the `net/http/pprof` package to capture live data under a simulated load, by adding a simple blank import:
 
@@ -65,9 +57,24 @@ To my surprise, my local environment was hitting nearly **2,000 RPS** — ten ti
 
 ### The First Round of Optimizations
 
-At this point, I performed the optimizations based on the initial pprof data.
+At this point, I performed optimizations based on the initial pprof data.
 
 **RBAC JSON Unmarshalling:** The service used a Redis-based Role-Based Access Control (RBAC) system. For every request, it fetched a massive `User` struct from Redis and unmarshalled the entire JSON object to check a single permission bit. I refactored this to store simple boolean flags or bitmasks in Redis. This reduced the CPU time spent on JSON decoding by nearly 30%.
+
+The profile at this stage looked something like this — JSON unmarshalling is visible, eating around 20–30% of CPU, but nothing that would explain a full cluster meltdown:
+
+{/* TODO: Replace with your actual flamegraph 1A file */}
+{/* <figure>
+  <Image
+    src={imgFlamegraphA}
+    alt="Go pprof flamegraph showing RBAC JSON unmarshalling consuming around 20-30% CPU — visible but not catastrophic"
+    width={1200}
+    height={630}
+  />
+  <figcaption>
+    Figure 1A: Initial pprof profile — RBAC JSON unmarshalling is the largest consumer, but the overall picture still looks manageable. (Reproduced on a test service for illustration; the original production profiles are proprietary.)
+  </figcaption>
+</figure> */}
 
 I thought I had found the solution. But when we deployed the RBAC fix to production, nothing changed. The CPU stayed at 100%, and the throughput stayed at 200 RPS.
 
@@ -79,15 +86,43 @@ When I added that header and ran pprof again, the trace revealed something entir
 
 As soon as I updated my local `go-wrk` script to include the production-spec device headers, my local CPU instantly spiked to 100%, and my RPS plummeted to exactly what we saw in production: **200 RPS**.
 
+This is what the new profile looked like. Same service, same endpoint — spot the difference:
+
+{/* TODO: Replace with your actual flamegraph 1B file */}
+{/* <figure>
+  <Image
+    src={imgFlamegraphB}
+    alt="Go pprof flamegraph showing bcrypt.CompareHashAndPassword consuming 95%+ of total CPU after adding the IoT device header"
+    width={1200}
+    height={630}
+  />
+  <figcaption>
+    Figure 1B: Profile after adding the IoT device header. bcrypt.CompareHashAndPassword has consumed almost everything — there is almost nothing else left. (Reproduced on a test service for illustration.)
+  </figcaption>
+</figure> */}
+
 ## The Bcrypt Implementation Issue: Self-Inflicted DDoS
 
-The resulting Flame Graph was unmistakable. A single function was consuming over 80% of the total CPU time: `bcrypt.CompareHashAndPassword`.
+The flame graph was unmistakable. A single function was consuming 95%+ of total CPU time: `bcrypt.CompareHashAndPassword`.
 
 We discovered that for every single telemetry ping — sent by thousands of vehicles every few seconds — the system was executing a Bcrypt comparison.
 
 From an architectural perspective, this is a catastrophic anti-pattern. Bcrypt is designed by cryptographers to be **slow**. It uses a computational "cost factor" to ensure that even with massive hardware, brute-forcing a password takes an eternity. It is meant for *login* endpoints, not *telemetry* endpoints.
 
 **We were essentially DDoS-ing ourselves.**
+
+
+{/* <figure>
+  <Image
+    src={imgThisIsFine}
+    alt="This is Fine meme — a dog sits calmly in a room that is entirely on fire"
+    width={800}
+    height={600}
+  />
+  <figcaption>
+    Production CPU at 100%. "Oh, we are DDoS-ing ourselves." — <em>This is Fine</em>, KC Green, Gunshow comic (2013). Via <a href="https://knowyourmeme.com/memes/this-is-fine" target="_blank" rel="noopener noreferrer">Know Your Meme</a>.
+  </figcaption>
+</figure> */}
 
 While the intention was to have high security for every data point, the implementation was impractical. For high-frequency IoT data, the industry standard is to use Bcrypt only during the initial handshake to exchange credentials for a lightweight session token or a short-lived JWT. Once authenticated, subsequent telemetry should be validated using symmetric keys or token lookups — orders of magnitude faster than Bcrypt.
 
@@ -116,7 +151,7 @@ v, err, _ := g.Do(deviceID, func() (interface{}, error) {
 
 By using singleflight, if 1,000 requests for `Device-A` arrive at the same time during a cache miss, **one** request performs the Bcrypt check, while the other 999 wait for that single result.
 
-> **Note on multi-instance behavior:** Singleflight is local to the instance. In our 27-instance setup, we might still perform 27 Bcrypt operations (one per instance) during a cache miss. This could lead to multiple instances writing to the cache simultaneously — but this was a negligible cost compared to the thousands of operations we were doing previously.
+> **Note on multi-instance behavior:** Singleflight is local to the instance. In our multi-node setup, we might still perform one Bcrypt operation per instance during a cache miss — but this was a negligible cost compared to the thousands of operations we were doing previously.
 
 > **Note on security:** While this fixed the performance, the system remains somewhat vulnerable to a focused DDoS. If an attacker cycles through thousands of different invalid tokens, the CPU would still spike because each unique invalid token triggers a new Bcrypt operation.
 
@@ -124,25 +159,41 @@ By using singleflight, if 1,000 requests for `Device-A` arrive at the same time 
 
 The impact was immediate. During a final 1-on-1, my Engineering Manager decided to test the limits. He scaled the environment down to just two small/medium instances.
 
+Here is what changed under the hood — from every request triggering bcrypt directly, to a layered shield where 99% of requests never touch it at all:
+
+<figure>
+  <Image
+    src={imgArchDiagram}
+    alt="Architecture diagram showing request flow before and after the optimization: before, every request hits bcrypt directly; after, a Redis cache and singleflight barrier absorb almost all load"
+    width={1200}
+    height={560}
+  />
+  <figcaption>
+    Request flow before (left) and after (right) the cache + singleflight fix. Cache hits return in nanoseconds; bcrypt is now rare and controlled.
+  </figcaption>
+</figure>
+
 We watched the dashboard in silence. The system didn't just survive — it thrived.
 
 | Metric | Before | After |
 |---|---|---|
 | Throughput | 200 RPS | 20,000+ RPS |
-| CPU Utilization | 90–100% | < 50% |
-| Instance Count | 27× c6g.16xlarge | 2× smaller instances |
-| Est. Monthly Cost | ~$42,000/mo | drastically reduced |
+| CPU Utilization | 90–100% | &lt;50% |
+| Instance count | ~27 nodes | 2 smaller instances |
+| Est. monthly cost | North of $42k/mo* | Drastically reduced |
+
+*Estimated from node count and on-demand pricing for the instance family. Exact billing figures were not shared with me as a contractor.*
 
 After that meeting, I received an email that honestly made me a bit emotional. The EM sent a company-wide announcement, crediting me for fixing the system's core stability and drastically slashing the AWS bill.
 
 ## Key Takeaways
 
-**Profile early, profile often.** Don't guess where the bottleneck is. Use `pprof` to see exactly where the CPU cycles are going.
+1. **Profile early, profile often.** Don't guess where the bottleneck is. Use `pprof` to see exactly where the CPU cycles are going.
 
-**Production parity matters.** My local tests failed initially because I wasn't using production-grade headers. Always ensure your load tests mimic real-world traffic patterns — including headers and metadata.
+2. **Production parity matters.** My local tests failed initially because I wasn't using production-grade headers. Always ensure your load tests mimic real-world traffic patterns — including headers and metadata.
 
-**Security vs. performance.** Security is paramount, but expensive algorithms like Bcrypt don't belong in high-frequency "hot paths." Use them for handshakes, not for every data packet.
+3. **Security vs. performance.** Security is paramount, but expensive algorithms like Bcrypt don't belong in high-frequency "hot paths." Use them for handshakes, not for every data packet.
 
-**Beware of the Thundering Herd.** Caching is not a silver bullet. When dealing with high concurrency, always consider what happens when the cache expires. Tools like `singleflight` are essential in your Go toolkit.
+4. **Beware of the Thundering Herd.** Caching is not a silver bullet. When dealing with high concurrency, always consider what happens when the cache expires. Tools like `singleflight` are essential in your Go toolkit.
 
-**Infrastructure is not a substitute for optimization.** Scaling horizontally can hide bad code for a while, but eventually, the technical debt will become too expensive to ignore.
+5. **Infrastructure is not a substitute for optimization.** Scaling horizontally can hide bad code for a while, but eventually, the technical debt will become too expensive to ignore.
