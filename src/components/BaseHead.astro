@@ -19,8 +19,19 @@ const { title, description, image = FallbackImage } = Astro.props;
 const fullTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`;
 ---
 
-<!-- Global Metadata -->
 <meta charset="utf-8" />
+
+<!-- Anti-FOUC: must run before first paint -->
+<script is:inline>
+  (function() {
+    var saved = localStorage.getItem('theme');
+    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+  })();
+</script>
+
+<!-- Global Metadata -->
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <link rel="icon" href="/favicon.ico" />
