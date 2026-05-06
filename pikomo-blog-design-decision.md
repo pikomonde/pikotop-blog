@@ -12,6 +12,8 @@ Bawa file ini ke chat baru sebagai konteks awal.
 - **Stack:** Astro + Tailwind CSS + MDX
 - **Tujuan:** Blog personal software engineering, juga dipakai sebagai canonical source untuk cross-posting ke Medium, Dev.to, Towards Data Science, The Startup, dll.
 - **Bahasa konten:** Campuran Indonesia & Inggris (per artikel)
+- **Hosting:** cPanel shared hosting. Deploy via GitHub Actions → SSH → rsync ke `/home/pikomoto/blog.pikomo.top/`. Static files only (SSG output). Tidak ada server-side runtime.
+- **Web utama:** www.pikomo.top dipisah repo dan deploy terpisah dari blog. Keduanya Astro SSG. Sync artikel terbaru ke www bisa via fetch RSS feed blog saat build-time.
 
 ---
 
@@ -224,7 +226,11 @@ Mengikuti `prefers-color-scheme` sistem — **tidak** sync dengan dark mode togg
 ## Keputusan Desain: Header & Footer
 
 - **Header:** Logo "PikoMo" (link ke `/`) di kiri, dark mode toggle di kanan. Tidak ada nav links.
-- **Footer:** Brand name kiri, copyright kanan. Tidak ada social links.
+- **Footer:** Tiga kolom:
+  - Kiri: brand "PikoMo Blog" + tagline singkat
+  - Tengah: nav links (RSS, /links di www.pikomo.top)
+  - Kanan: copyright + social links (LinkedIn, GitHub, Ko-fi)
+  - Mobile: stack vertikal
 - Halaman `/about` tidak ada — tidak dipakai.
 
 ---
@@ -266,7 +272,19 @@ export const SITE_DESCRIPTION = 'Software development, programming, and technolo
 - [ ] Migrasi styling ke Tailwind — saat ini styling pakai `<style>` scoped per komponen, belum pakai utility classes Tailwind secara konsisten
 - [ ] Tag `NEW` — artikel yang baru publish (misal dalam 7 hari terakhir) mendapat badge NEW di kartu
 - [x] Related articles — sudah diimplementasi di `BlogPost.astro`. Scoring: same series (5pts) + topic overlap (3pts each) + recency boost top-7 (1.5pts per rank). Maks 3 artikel.
-- [x] **RSS filter draft** — `rss.xml.js` belum filter `draft: true`, artikel draft bisa bocor ke feed. Fix: tambah `.filter((p) => !p.data.draft)` sebelum mapping.
+- [x] **RSS filter draft** — `rss.xml.js` sudah filter `draft: true`.
+- [x] Footer — diperbarui jadi 3 kolom: brand+tagline | nav links | copyright+socials.
+- [ ] **Performance & Monitoring** — daftar hal yang perlu didaftarkan/dicek:
+  - [ ] Daftar & verifikasi **Google Search Console** untuk `blog.pikomo.top` (submit sitemap, pantau Core Web Vitals real-user, cek indexing errors)
+  - [ ] Daftar & verifikasi **Google Search Console** untuk `www.pikomo.top` (properti terpisah)
+  - [ ] Cek performa via **PageSpeed Insights** (pagespeed.web.dev) — target LCP < 2.5s, CLS < 0.1, INP < 200ms
+  - [ ] GTmetrix — opsional, bisa skip kalau sudah pakai PageSpeed Insights
+  - [ ] web.dev/measure — sudah deprecated, redirect ke PageSpeed Insights, skip
+- [ ] **Analytics** — pilih salah satu:
+  - Opsi A: **Umami self-hosted** (gratis, GDPR compliant by default, tidak perlu cookie banner, script ~2KB). Deploy via Docker ke Railway/Fly.io free tier. Bisa track blog + www sekaligus dari satu instance.
+  - Opsi B: **GA4 via GTM** — butuh cookie consent popup untuk visitor EU (wajib GDPR). Keuntungan: integrasi Google Search Console data + keyword organic query via GSC linking.
+  - **Catatan keyword organic:** Baik Umami maupun GA4, data keyword "apa yang dicari user di Google" TIDAK tersedia langsung — ini ada di Google Search Console (gratis). GA4 bisa di-link ke GSC untuk lihat query data di dalam GA4 dashboard, tapi sumbernya tetap GSC. Umami + GSC juga bisa jalan berdampingan.
+- [ ] **Draft URL protection** — `[...slug].astro` tidak filter draft, artikel draft bisa diakses via URL langsung. Pertimbangkan apakah perlu di-block atau by design.
 
 ---
 
@@ -356,9 +374,13 @@ Taruh tepat sebelum paragraf pertama, sesudah judul/subtitle platform.
 
 Taruh setelah paragraf terakhir konten, sebelum tag/topic platform.
 
+Funnel yang diinginkan: Dev.to / Medium → blog.pikomo.top → footer → /links (di www.pikomo.top).
+Ko-fi disebut di penutup artikel saja — tidak diulang di footer blog supaya tidak overlap.
+
 ### Catatan
 
 - Cukup link ke `blog.pikomo.top` saja — tidak perlu link ke artikel spesifik lain
 - Tidak perlu tambah link `/support` di CTA artikel — terlalu banyak pilihan justru mengurangi konversi
 - Canonical URL di settings platform (Medium: "Import story" atau canonical field, Dev.to: `canonical_url` di frontmatter) tetap wajib diset ke URL artikel spesifik di blog
+
 
