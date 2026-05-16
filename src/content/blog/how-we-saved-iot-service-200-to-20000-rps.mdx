@@ -14,7 +14,7 @@ draft: false
 author: "Piko Monde"
 ---
 
-import { Image } from 'astro:assets';
+import ZoomImage from '../../components/ZoomImage.astro';
 import imgFlamegraphA from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-rbac-json-unmarshal-go.webp';
 import imgFlamegraphB from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-bcrypt-hotpath-cpu-saturation.webp';
 import imgThisIsFine from '../../assets/how-we-saved-iot-service-200-to-20000-rps/this-is-fine-meme-self-inflicted-ddos.webp';
@@ -65,11 +65,11 @@ At this point, I performed optimizations based on the initial pprof data.
 The profile at this stage looked something like this — JSON unmarshalling is visible, eating around 20–30% of CPU, but nothing that would explain a full cluster meltdown:
 
 <figure>
-  <Image
+  <ZoomImage
     src={imgFlamegraphA}
     alt="Go pprof flamegraph showing RBAC JSON unmarshalling consuming around 20-30% CPU — visible but not catastrophic"
-    width={1200}
-    height={630}
+    width={3203}
+    height={3471}
   />
   <figcaption>
     Figure 1A: Initial pprof profile — RBAC JSON unmarshalling is the largest consumer, but the overall picture still looks manageable. (Reproduced on a test service for illustration; the original production profiles are proprietary.)
@@ -89,11 +89,11 @@ As soon as I updated my local `go-wrk` script to include the production-spec dev
 This is what the new profile looked like. Same service, same endpoint — spot the difference:
 
 <figure>
-  <Image
+  <ZoomImage
     src={imgFlamegraphB}
     alt="Go pprof flamegraph showing bcrypt.CompareHashAndPassword consuming 95%+ of total CPU after adding the IoT device header"
-    width={1200}
-    height={630}
+    width={1199}
+    height={2023}
   />
   <figcaption>
     Figure 1B: Profile after adding the IoT device header. bcrypt.CompareHashAndPassword has consumed almost everything — there is almost nothing else left. (Reproduced on a test service for illustration.)
@@ -112,11 +112,11 @@ From an architectural perspective, this is a catastrophic anti-pattern. Bcrypt i
 
 
 <figure>
-  <Image
+  <ZoomImage
     src={imgThisIsFine}
     alt="This is Fine meme — a dog sits calmly in a room that is entirely on fire"
-    width={800}
-    height={600}
+    width={716}
+    height={349}
   />
   <figcaption>
     Production CPU at 100%. "Oh, we are DDoS-ing ourselves." — <em>This is Fine</em>, KC Green, Gunshow comic (2013). Via <a href="https://knowyourmeme.com/memes/this-is-fine" target="_blank" rel="noopener noreferrer">Know Your Meme</a>.
@@ -161,10 +161,10 @@ The impact was immediate. During a final 1-on-1, my Engineering Manager decided 
 Here is what changed under the hood — from every request triggering bcrypt directly, to a layered shield where 99% of requests never touch it at all:
 
 <figure>
-  <Image
+  <ZoomImage
     src={imgArchDiagram}
     alt="Architecture diagram showing request flow before and after the optimization: before, every request hits bcrypt directly; after, a Redis cache and singleflight barrier absorb almost all load"
-    width={1200}
+    width={680}
     height={560}
   />
   <figcaption>
