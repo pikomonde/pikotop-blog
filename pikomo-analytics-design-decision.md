@@ -239,7 +239,9 @@ Events yang perlu dimigrasi: `navigation_click`, `toggle_theme`, `crypto_modal_o
 
 - **Matomo:** pakai cookie (`_pk_id`, `_pk_ses`), data di server sendiri, tidak keluar ke pihak ketiga
 - **GA4:** di-pause, tidak ada data yang dikirim ke Google
-- **Consent banner:** tidak dipasang untuk sekarang — enforcement GDPR untuk personal blog berbahasa Indonesia sangat rendah
+- **Consent banner:** belum dipasang (MVP) — ini keputusan sadar risiko, bukan karena aman
+
+> ⚠️ **Catatan risiko:** Artikel ditulis dalam bahasa Inggris dan di-share dari Medium, Dev.to, Hackernoon — artinya ada EU audience yang masuk. Matomo dengan cookie tanpa consent banner technically tidak GDPR compliant untuk EU visitor. Lihat TODO section untuk rencana mitigasi.
 
 ### Yang perlu dilakukan untuk compliance minimal
 
@@ -300,9 +302,19 @@ Pasang kalau dashboard Matomo terasa lambat saat buka laporan:
 - [ ] Setup analytics `links.pikomo.top`: GA4 stream baru + Matomo Site ID 3 + GTM trigger baru
 - [ ] Pasang hash navigation tracking di `links.pikomo.top` (lihat section 5)
 
+### ⚠️ Backlog: GDPR proper compliance (consent banner)
+
+Saat ini Matomo pakai cookie tanpa consent banner — ini risiko yang diterima untuk MVP. Artikel berbahasa Inggris yang di-share dari Medium/Dev.to/Hackernoon berpotensi dapat EU visitor, artinya GDPR technically berlaku.
+
+Kalau blog mulai tumbuh dan EU audience signifikan, segera kerjakan ini:
+
+- [ ] Switch Matomo ke **cookieless mode** (opsi paling simple, tidak perlu consent banner sama sekali) — atau —
+- [ ] Pasang **consent banner** (Klaro, open source ~10KB) via GTM: Matomo jalan tanpa consent (cookieless), GA4 hanya fire setelah user accept
+- [ ] Buat halaman **Privacy Policy** di blog — isinya: tool yang dipakai, data apa yang dikumpulkan, link opt-out Matomo
+- [ ] Tambah link Privacy Policy di footer blog
+
 ### Kalau mau aktifkan GA4 kembali
 
 - [ ] Un-pause tag GA4 di GTM
-- [ ] Pasang consent banner (Klaro) via GTM
+- [ ] Pasang consent banner (Klaro) via GTM — wajib kalau GA4 aktif dan ada EU audience
 - [ ] Ganti semua `gtag('event', ...)` di `www/index.html` ke `dataLayer.push()`
-- [ ] Buat halaman Privacy Policy di blog
