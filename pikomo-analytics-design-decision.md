@@ -1,134 +1,99 @@
-# PikoMo Analytics — Design Decision Summary
+# PikoMo Analytics — Design Decision
 
-Ini adalah briefing untuk setup dan maintenance analytics di hosting cPanel PikoMo.
-Bawa file ini ke chat baru sebagai konteks awal.
-
----
-
-## Tentang Setup Analytics
-
-- **Tool:** Matomo (self-hosted) + Google Analytics 4 — keduanya dikelola via Google Tag Manager
-- **GTM Container ID:** `GTM-P8F5LQD2` — satu container untuk semua subdomain `*.pikomo.top`
-- **Matomo URL:** https://internal.pikomo.top/analytics
-- **Matomo Stack:** PHP + MySQL — native di cPanel, tidak butuh Node.js/Passenger
-- **Hosting:** cPanel shared hosting (sama dengan blog), DomaiNesia
-- **Tujuan:** Dual analytics — Matomo untuk privacy-first data, GA4 untuk integrasi Google Search Console
-- **Status:**
-  - ✅ Matomo terinstall dan aktif
-  - ✅ GTM container aktif (`GTM-P8F5LQD2`)
-  - ✅ GA4 + Matomo tag sudah fired untuk `blog.pikomo.top`
-  - ⏳ `www.pikomo.top` belum diupdate (masih pakai gtag.js langsung, belum migrasi ke GTM)
+> Briefing untuk setup dan maintenance analytics di semua subdomain `*.pikomo.top`.
+> Bawa file ini ke chat baru sebagai konteks awal.
 
 ---
 
-## Arsitektur Analytics
+## Daftar Isi
+
+- [1. Keputusan & Alasan](#1-keputusan--alasan)
+- [2. Arsitektur](#2-arsitektur)
+- [3. Konfigurasi per Site](#3-konfigurasi-per-site)
+- [4. GTM Setup](#4-gtm-setup)
+- [5. Matomo Setup](#5-matomo-setup)
+- [6. GA4 Setup](#6-ga4-setup)
+- [7. GDPR & Privacy](#7-gdpr--privacy)
+- [8. Maintenance](#8-maintenance)
+- [9. TODO](#9-todo)
+
+---
+
+## 1. Keputusan & Alasan
+
+### Tool yang dipakai
+
+| Tool | Status | Alasan |
+|---|---|---|
+| **Matomo** (self-hosted) | ✅ Aktif | Privacy-first, data tidak keluar server, tidak perlu consent banner untuk sekarang |
+| **Google Tag Manager** | ✅ Aktif | Satu container untuk semua site — ubah tracking strategy tanpa deploy ulang |
+| **GA4** | ⏸ Di-pause | Tidak ada kebutuhan mendesak; bisa diaktifkan kembali lewat GTM kapanpun |
+
+### Kenapa GTM?
+
+Semua tag (Matomo, GA4, dan apapun yang ditambah nanti) dikelola dari satu tempat. Kalau strategi berubah — misalnya mau aktifkan GA4 untuk keperluan sponsorship, atau tambah consent banner — cukup klik di GTM dashboard tanpa ubah kode Astro atau deploy ulang.
+
+### Kenapa Matomo, bukan Umami?
+
+Umami (Node.js + PostgreSQL) gagal di shared hosting DomaiNesia karena dua alasan:
+- **Inode habis** — `node_modules/` menghabiskan inode secara masif, bukan hanya storage
+- **Storage hampir penuh** — sempat mencapai ~1.2GB dari total 2GB
+
+Matomo PHP dipilih karena native di cPanel (PHP + MySQL), install via Softaculous, dan inode jauh lebih hemat.
+
+### Kenapa GA4 di-pause?
+
+- Belum ada rencana direct sponsorship dalam waktu dekat
+- GA4 kirim data ke server Google (EU data transfer concern)
+- Matomo sudah cukup untuk kebutuhan saat ini
+- Bisa diaktifkan kembali lewat GTM kapanpun tanpa ubah kode
+
+---
+
+## 2. Arsitektur
 
 ```
 *.pikomo.top
     └── GTM Container (GTM-P8F5LQD2)
-            ├── Tag: GA4 - blog.pikomo.top     → G-EES94E7BJB   (trigger: hostname = blog.pikomo.top)
-            ├── Tag: GA4 - www.pikomo.top      → G-YY7Y732ZH5   (trigger: hostname = www.pikomo.top)
-            ├── Tag: Matomo - blog.pikomo.top  → Site ID 1       (trigger: hostname = blog.pikomo.top)
-            └── Tag: Matomo - www.pikomo.top   → Site ID 2       (trigger: hostname = www.pikomo.top)
+            ├── Tag: GA4 - blog.pikomo.top    [⏸ PAUSED]
+            ├── Tag: GA4 - www.pikomo.top     [⏸ PAUSED]
+            ├── Tag: Matomo - blog.pikomo.top [✅ ACTIVE]  → Site ID 1
+            └── Tag: Matomo - www.pikomo.top  [⏳ PENDING] → Site ID 2
 ```
 
-Setiap tag hanya fire di hostname yang sesuai — tidak ada cross-fire antar site.
+Setiap tag hanya fire di hostname yang sesuai — dikontrol via GTM trigger condition.
 
----
-
-## GA4 Setup
-
-### Property & Measurement IDs
-
-| Site | Measurement ID | Stream Name |
-|---|---|---|
-| `www.pikomo.top` | `G-YY7Y732ZH5` | PikoMo www |
-| `blog.pikomo.top` | `G-EES94E7BJB` | PikoMo Blog |
-
-Semua stream di bawah satu GA4 property yang sama — bisa lihat aggregate atau filter per stream.
-
-### Kenapa pisah stream, bukan gabung?
-
-- blog dan www punya pertanyaan analitik yang berbeda (artikel vs portfolio)
-- Pisah stream = bisa isolasi data per site, tapi tetap bisa aggregate di GA4 Exploration
-- Cross-domain journey ditangani Matomo (yang sudah setup `setCookieDomain: *.pikomo.top`)
-- Trade-off: GA4 cross-domain attribution kurang akurat kalau user journey lintas stream — ini diterima, karena Matomo yang handle cross-domain
-
-### Tag di GTM (tipe: Google Tag)
-
-Sejak update GTM terbaru, "GA4 Configuration" berganti nama menjadi **Google Tag**. Fungsinya sama.
+### Struktur server
 
 ```
-Tag: GA4 - blog.pikomo.top
-  Type: Google Tag
-  Tag ID: G-EES94E7BJB
-  Trigger: Pageview - blog.pikomo.top (hostname equals blog.pikomo.top)
-
-Tag: GA4 - www.pikomo.top
-  Type: Google Tag
-  Tag ID: G-YY7Y732ZH5
-  Trigger: Pageview - www.pikomo.top (hostname equals www.pikomo.top)
+/home/pikomoto/
+  internal.pikomo.top/
+    analytics/         ← Matomo PHP (install via Softaculous)
+      config/
+        config.ini.php ← DB credentials
+      tmp/             ← Cache Matomo
+    .htaccess          ← Options -Indexes
 ```
 
 ---
 
-## Matomo Setup
+## 3. Konfigurasi per Site
 
-### Site IDs
-
-| Site | Site ID |
-|---|---|
-| `blog.pikomo.top` | 1 |
-| `www.pikomo.top` | 2 |
-
-### Kenapa pindah dari direct script ke GTM?
-
-Sebelumnya Matomo dipasang langsung di `BaseHead.astro` sebagai direct script. Sekarang dikelola via GTM supaya:
-- Satu tempat untuk manage semua analytics (GA4 + Matomo)
-- Tidak perlu edit kode setiap kali ada perubahan tracking
-- Trigger per hostname lebih clean dikelola di GTM
-
-### Tag di GTM (tipe: Custom HTML)
-
-```html
-<!-- Tag: Matomo - blog.pikomo.top (Site ID 1) -->
-<script>
-  var _paq = window._paq = window._paq || [];
-  _paq.push(['setCookieDomain', '*.pikomo.top']);
-  _paq.push(['setDomains', ['*.pikomo.top']]);
-  _paq.push(['trackPageView']);
-  _paq.push(['enableLinkTracking']);
-  (function() {
-    var u="//internal.pikomo.top/analytics/";
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', '1']);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
-  })();
-</script>
-```
-
-```html
-<!-- Tag: Matomo - www.pikomo.top (Site ID 2) -->
-<!-- Script sama, ganti setSiteId ke '2' -->
-```
-
-### Cross-domain tracking
-
-`setCookieDomain` dan `setDomains` dipasang di semua tag Matomo supaya journey user lintas subdomain (misal: blog → links → www) terhitung sebagai satu session.
+| Site | GTM Snippet | Matomo | GA4 |
+|---|---|---|---|
+| `blog.pikomo.top` | ✅ Di `BaseHead.astro` | ✅ Site ID 1, firing | ⏸ Tag ada, di-pause |
+| `www.pikomo.top` | ⏳ Belum dipasang | ⏳ Site ID 2, tag belum firing | ⏸ Tag ada, di-pause |
+| `links.pikomo.top` | ⏳ Belum ada | ⏳ Belum setup | ⏳ Belum setup |
 
 ---
 
-## GTM Setup
+## 4. GTM Setup
 
-### Container
+**Container ID:** `GTM-P8F5LQD2`
 
-- **Container ID:** `GTM-P8F5LQD2`
-- **Scope:** semua subdomain `*.pikomo.top`
+### Built-in Variables yang diaktifkan
 
-### Variables yang diaktifkan
-
-Di GTM → Variables → Configure, centang:
+GTM → Variables → Configure → centang:
 - `Page Hostname` ✅
 - `Page URL` ✅
 
@@ -148,9 +113,8 @@ Trigger: Pageview - www.pikomo.top
 
 ### GTM Snippet
 
-Snippet yang sama dipasang di semua site. Untuk Astro, wajib pakai `is:inline`.
+**Di `<head>`** — untuk Astro wajib pakai `is:inline`:
 
-**Di `<head>` (script):**
 ```html
 <!-- Google Tag Manager -->
 <script is:inline>
@@ -163,7 +127,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 ```
 
-**Di `<body>` (noscript — fallback untuk browser tanpa JS, sangat jarang):**
+**Di `<body>` (noscript)** — fallback untuk browser tanpa JS, practically jarang tapi recommended:
+
 ```html
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8F5LQD2"
@@ -173,163 +138,58 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 ---
 
-## Integrasi per Site
+## 5. Matomo Setup
 
-### blog.pikomo.top (`src/components/BaseHead.astro`)
+**URL:** `https://internal.pikomo.top/analytics`
+**Stack:** PHP + MySQL, install via Softaculous
+**DB credentials:** tersimpan di `analytics/config/config.ini.php` — jangan enable remote DB access
 
-Script Matomo direct yang lama **sudah digantikan** dengan GTM snippet.
-GTM snippet dipasang di `BaseHead.astro` dengan `is:inline`.
+### Site IDs
 
-Noscript ditambah di:
-- `src/layouts/BlogPost.astro` — tepat setelah tag `<body>`
-- `src/pages/index.astro` — tepat setelah tag `<body>`
+| Site | Site ID | Status |
+|---|---|---|
+| `blog.pikomo.top` | 1 | ✅ Aktif |
+| `www.pikomo.top` | 2 | ⏳ Site sudah dibuat, tag GTM belum firing |
+| `links.pikomo.top` | 3 (belum dibuat) | ⏳ Tunggu site jadi |
 
-### www.pikomo.top (`index.html`)
+### Tag GTM untuk Matomo (Custom HTML)
 
-⚠️ **Belum dimigrasi** — masih pakai gtag.js langsung. Lihat TODO di bawah.
+```html
+<script>
+  var _paq = window._paq = window._paq || [];
+  _paq.push(['setCookieDomain', '*.pikomo.top']);
+  _paq.push(['setDomains', ['*.pikomo.top']]);
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//internal.pikomo.top/analytics/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', 'SITE_ID_DISINI']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+```
 
----
+`setCookieDomain` dan `setDomains` penting untuk cross-domain tracking — user journey dari blog → links → www terhitung satu session.
 
-## Custom Events — www.pikomo.top
+### Menambah site baru di Matomo
 
-Setelah migrasi ke GTM, semua `gtag('event', ...)` di `www/index.html` harus diganti dengan `dataLayer.push()`:
+Matomo Administration → Websites → Add a new website → isi URL → dapat Site ID baru.
+
+### Untuk links.pikomo.top (SPA dengan hash navigation)
+
+Karena `#links`, `#projects` dll adalah "halaman" berbeda (bukan scroll anchor biasa), perlu virtual pageview tracking:
 
 ```js
-// Lama (gtag langsung):
-gtag('event', 'navigation_click', {
-  'event_label': '...',
-  'destination': '...'
-});
-
-// Baru (via dataLayer):
-dataLayer.push({
-  'event': 'navigation_click',
-  'event_label': '...',
-  'destination': '...'
-});
-```
-
-Daftar events yang perlu dimigrasi di `www/index.html`:
-
-| Event lama (gtag) | Event baru (dataLayer) |
-|---|---|
-| `navigation_click` | `navigation_click` |
-| `toggle_theme` | `toggle_theme` |
-| `crypto_modal_open` | `crypto_modal_open` |
-| `wallet_copy` | `wallet_copy` |
-
----
-
-## Kenapa Pindah dari Umami ke Matomo (Histori)
-
-Umami (Node.js + PostgreSQL) dicoba dulu tapi gagal karena dua kendala di shared hosting DomaiNesia:
-
-1. **Inode habis** — Node.js app dengan `node_modules/` menghabiskan inode hosting secara masif. Shared hosting DomaiNesia punya limit inode yang ketat, bukan hanya limit storage.
-2. **Storage hampir penuh** — Pemakaian sempat mencapai ~1.2GB (dari total 2GB). Meski masih cukup secara MB, inode sudah habis duluan.
-
-Matomo PHP dipilih karena:
-- **PHP + MySQL** — stack yang sudah native di cPanel, tidak ada overhead `node_modules`
-- **Install via Softaculous** — 1-click, tidak perlu konfigurasi manual Passenger/env vars
-- **Inode jauh lebih hemat** — tidak ada ribuan file `node_modules`
-- **Fitur lebih lengkap** — goals, segmentasi, live tracking, dll.
-
----
-
-## Struktur di Server
-
-```
-/home/pikomoto/
-  internal.pikomo.top/
-    analytics/              ← Matomo PHP files (diinstall via Softaculous)
-      config/
-        config.ini.php      ← Konfigurasi Matomo (DB credentials, dll.)
-      tmp/                  ← Cache Matomo
-    .htaccess               ← Options -Indexes (cegah directory listing)
-```
-
----
-
-## Instalasi Matomo (Referensi)
-
-Matomo diinstall via **Softaculous Apps Installer** di cPanel:
-
-1. cPanel → Softaculous Apps Installer → search "Matomo" → Install
-2. Isi form:
-   - Protocol: `https://`
-   - Domain: `internal.pikomo.top`
-   - In Directory: `analytics`
-   - Database: auto-generate oleh Softaculous
-3. Softaculous otomatis buat database MySQL, user, dan jalankan installer
-
----
-
-## Database
-
-- **Engine:** MySQL (auto-dibuat Softaculous)
-- **Host:** `localhost`
-- **Database name:** konvensi cPanel `pikomoto_XXXX` (lihat di Softaculous → Installations)
-- **Credentials:** tersimpan di `internal.pikomo.top/analytics/config/config.ini.php`
-
-**Penting:** Jangan aktifkan remote DB access. Biarkan lokal saja.
-
----
-
-## Keputusan Domain
-
-- **Subdomain:** `internal.pikomo.top` dengan path `/analytics`
-- **Alasan tidak pakai `analytics.pikomo.top`:** Fleksibilitas — kalau nanti tambah service internal lain, bisa taruh di `internal.pikomo.top/service-lain` tanpa buat subdomain baru
-- **Kenapa tidak pakai nama acak** (seperti `analytics-xk92d.pikomo.top`): Security through obscurity bukan security yang sesungguhnya. Semua subdomain yang dapat SSL tercatat publik di [crt.sh](https://crt.sh). Proteksi sebenarnya adalah password yang kuat.
-
-### Fix Directory Listing
-
-```apache
-# /home/pikomoto/internal.pikomo.top/.htaccess
-Options -Indexes
-```
-
----
-
-## Update Matomo
-
-Tidak pakai CD pipeline — update via Softaculous atau dashboard Matomo:
-
-- **Via dashboard Matomo:** Admin → System Check → ada notifikasi kalau ada update baru → klik Update
-- **Via Softaculous:** cPanel → Softaculous → My Installations → Update
-
-Cek release notes sebelum update: https://github.com/matomo-org/matomo/releases
-
----
-
-## Manajemen Storage
-
-Matomo PHP jauh lebih hemat inode dibanding Umami Node.js. Pantau tetap perlu:
-
-- Set data retention: **Matomo Dashboard → Administration → Privacy → Data Retention → 12 bulan**
-- Monitor storage rutin via cPanel → Disk Usage
-- **Warning threshold:** kalau storage sudah di atas 1.8GB, segera cek
-
-Estimasi database growth: ~1GB per 5 juta pageview. Untuk blog personal, ini sangat aman.
-
----
-
-## Untuk Nanti: links.pikomo.top (atau card.pikomo.top)
-
-Keputusan nama belum final (kandidat: `links.pikomo.top` vs `card.pikomo.top`). Setelah site-nya jadi:
-
-1. **GA4:** Admin → Data Streams → Add stream → Web → `links.pikomo.top` → catat Measurement ID
-2. **Matomo:** Administration → Websites → Add → `links.pikomo.top` → dapat Site ID 3
-3. **GTM:** Tambah trigger baru `Pageview - links.pikomo.top`, buat tag GA4 + Matomo dengan hostname condition yang sesuai
-4. **Hash-based navigation tracking** (karena site ini SPA-like dengan `#links`, `#projects`, dll):
-
-```js
-// Matomo virtual pageview on hash change
+// Matomo
 window.addEventListener('hashchange', () => {
   _paq.push(['setCustomUrl', window.location.href]);
   _paq.push(['setDocumentTitle', 'Card - ' + window.location.hash]);
   _paq.push(['trackPageView']);
 });
 
-// GA4 via dataLayer
+// GA4 via dataLayer (kalau GA4 nanti diaktifkan)
 window.addEventListener('hashchange', () => {
   dataLayer.push({
     'event': 'virtual_pageview',
@@ -341,26 +201,108 @@ window.addEventListener('hashchange', () => {
 
 ---
 
-## TODO
+## 6. GA4 Setup
 
-- [x] Install Matomo via Softaculous
-- [x] Verifikasi live tracking aktif di Matomo dashboard
-- [x] Setup GTM container (`GTM-P8F5LQD2`)
-- [x] Buat GA4 stream untuk `blog.pikomo.top` (`G-EES94E7BJB`)
-- [x] Buat Matomo Site ID 2 untuk `www.pikomo.top`
-- [x] Buat 4 tags di GTM (GA4 + Matomo × blog + www)
-- [x] Buat 2 triggers di GTM (per hostname)
-- [x] Migrasi `BaseHead.astro` blog dari direct Matomo script ke GTM snippet
-- [x] Verifikasi GTM Preview Mode — tags fired untuk `blog.pikomo.top` ✅
-- [ ] **Migrasi `www.pikomo.top/index.html`** — ganti gtag.js direct dengan GTM snippet:
-  - Hapus blok `<script async src="https://www.googletagmanager.com/gtag/js?id=G-YY7Y732ZH5">` dan gtag config
-  - Pasang GTM snippet `GTM-P8F5LQD2` di `<head>`
-  - Pasang noscript `GTM-P8F5LQD2` setelah `<body>`
-  - Ganti semua `gtag('event', ...)` dengan `dataLayer.push({event: ...})` — lihat tabel events di atas
-- [ ] Verifikasi GTM Preview Mode untuk `www.pikomo.top` setelah migrasi
-- [ ] Set data retention 12 bulan di Matomo (Administration → Privacy → Data Retention)
-- [ ] Tambah `.htaccess` di `internal.pikomo.top` untuk disable directory listing (kalau belum)
-- [ ] Setup cron job untuk archiving laporan Matomo (opsional — kalau dashboard terasa lambat):
-  - cPanel → Cron Jobs → tambah: `5 * * * * php /home/pikomoto/internal.pikomo.top/analytics/console core:archive --url=https://internal.pikomo.top/analytics > /dev/null 2>&1`
-- [ ] Setup analytics untuk `links.pikomo.top` (atau `card.pikomo.top`) setelah site-nya jadi — lihat section "Untuk Nanti" di atas
+**Status: di-pause. Tag ada di GTM, tidak dihapus — bisa diaktifkan kembali kapanpun.**
+
+### Measurement IDs
+
+| Site | Measurement ID | Status |
+|---|---|---|
+| `blog.pikomo.top` | `G-EES94E7BJB` | ⏸ Di-pause di GTM |
+| `www.pikomo.top` | `G-YY7Y732ZH5` | ⏸ Di-pause di GTM |
+
+### Kapan perlu diaktifkan kembali?
+
+- Mau kejar direct sponsorship → aktifkan GA4 blog, tambah consent banner
+- Mau integrasi Google Search Console ke GA4 → aktifkan, link di GA4 Admin
+
+### Kalau nanti diaktifkan: custom events www
+
+Semua `gtag('event', ...)` di `www/index.html` perlu diganti `dataLayer.push()`:
+
+```js
+// Lama:
+gtag('event', 'navigation_click', { 'event_label': '...', 'destination': '...' });
+
+// Baru:
+dataLayer.push({ 'event': 'navigation_click', 'event_label': '...', 'destination': '...' });
+```
+
+Events yang perlu dimigrasi: `navigation_click`, `toggle_theme`, `crypto_modal_open`, `wallet_copy`.
+
+---
+
+## 7. GDPR & Privacy
+
+### Status saat ini
+
+- **Matomo:** pakai cookie (`_pk_id`, `_pk_ses`), data di server sendiri, tidak keluar ke pihak ketiga
+- **GA4:** di-pause, tidak ada data yang dikirim ke Google
+- **Consent banner:** tidak dipasang untuk sekarang — enforcement GDPR untuk personal blog berbahasa Indonesia sangat rendah
+
+### Yang perlu dilakukan untuk compliance minimal
+
+- Aktifkan **IP anonymization** di Matomo: Administration → Privacy → Anonymize data → anonymize last 2 bytes of IP
+- Set **data retention** 12 bulan: Administration → Privacy → Data Retention
+- Buat **halaman Privacy Policy** sederhana di blog — isinya cukup: "Site ini menggunakan Matomo Analytics (self-hosted). Data tidak dibagikan ke pihak ketiga." + link opt-out Matomo
+
+### Kalau nanti GA4 diaktifkan kembali
+
+Perlu tambah consent banner (misalnya [Klaro](https://klaro.org) — open source, ~10KB). Setup via GTM: GA4 tag hanya fire setelah user consent, Matomo tetap jalan tanpa consent.
+
+### Keputusan domain analytics
+
+Subdomain `internal.pikomo.top/analytics` dipilih supaya fleksibel kalau nanti ada service internal lain. Security by obscurity tidak dipakai: semua subdomain SSL tercatat publik di [crt.sh](https://crt.sh), proteksi sebenarnya adalah password yang kuat.
+
+---
+
+## 8. Maintenance
+
+### Update Matomo
+
+Via dashboard: Administration → System Check → klik Update kalau ada notifikasi.
+Via Softaculous: cPanel → My Installations → Update.
+Cek release notes: https://github.com/matomo-org/matomo/releases
+
+### Storage
+
+Estimasi growth: ~1GB per 5 juta pageview — sangat aman untuk blog personal.
+Warning threshold: kalau storage di atas 1.8GB, segera cek via cPanel → Disk Usage.
+
+### Cron job archiving (opsional)
+
+Pasang kalau dashboard Matomo terasa lambat saat buka laporan:
+
+```
+5 * * * * php /home/pikomoto/internal.pikomo.top/analytics/console core:archive --url=https://internal.pikomo.top/analytics > /dev/null 2>&1
+```
+
+---
+
+## 9. TODO
+
+### Segera
+
+- [X] Aktifkan IP anonymization di Matomo (Administration → Privacy → Anonymize data)
+- [ ] Set data retention 12 bulan (Administration → Privacy → Data Retention)
+- [ ] Tambah `.htaccess` `Options -Indexes` di `internal.pikomo.top` kalau belum ada
 - [X] Tambah noscript GTM di `BlogPost.astro` dan `index.astro` setelah tag `<body>`
+
+### www.pikomo.top
+
+- [ ] Pasang GTM snippet di `www/index.html` — hapus blok gtag.js lama, ganti dengan GTM snippet
+- [ ] Pasang noscript GTM setelah `<body>`
+- [ ] Verifikasi GTM Preview Mode untuk `www.pikomo.top` — pastikan tag Matomo firing, GA4 tidak
+
+### Nanti (kalau sudah ada sitenya)
+
+- [ ] Setup analytics `links.pikomo.top`: GA4 stream baru + Matomo Site ID 3 + GTM trigger baru
+- [ ] Pasang hash navigation tracking di `links.pikomo.top` (lihat section 5)
+
+### Kalau mau aktifkan GA4 kembali
+
+- [ ] Un-pause tag GA4 di GTM
+- [ ] Pasang consent banner (Klaro) via GTM
+- [ ] Ganti semua `gtag('event', ...)` di `www/index.html` ke `dataLayer.push()`
+- [ ] Buat halaman Privacy Policy di blog
