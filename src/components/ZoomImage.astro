@@ -214,6 +214,14 @@ const id = Math.random().toString(36).slice(2, 8);
       document.body.style.overflow = 'hidden';
       if (img.complete && img.naturalWidth) centerImage();
       else img.onload = centerImage;
+
+      // ── Tracking ──
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+          'event': 'zoom_image',
+          'image_alt': srcImg.alt || 'no-alt',
+          'page_title': document.title
+      });
     }
 
     function close() {

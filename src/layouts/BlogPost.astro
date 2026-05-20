@@ -525,9 +525,34 @@ const initials = author
 			)}
 		</main>
 		<Footer />
+
+		<script>
+			// Scroll Depth Tracking
+			(function() {
+				const scrollMarks = new Set();
+				window.addEventListener('scroll', () => {
+					const scrolled = window.scrollY;
+					const total = document.body.scrollHeight - window.innerHeight;
+					if (total <= 0) return;
+					const percent = Math.round((scrolled / total) * 100);
+					[25, 50, 75, 100].forEach(mark => {
+						if (percent >= mark && !scrollMarks.has(mark)) {
+							scrollMarks.add(mark);
+							(window as any).dataLayer = (window as any).dataLayer || [];
+							(window as any).dataLayer.push({
+								'event': 'scroll_depth',
+								'scroll_percent': mark + '%',
+								'page_title': document.title
+							});
+						}
+					});
+				}, { passive: true });
+			})();
+		</script>
+		
+		<!-- Google Tag Manager (noscript) -->
+		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8F5LQD2"
+		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		<!-- End Google Tag Manager (noscript) -->
 	</body>
-	<!-- Google Tag Manager (noscript) -->
-	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8F5LQD2"
-	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-	<!-- End Google Tag Manager (noscript) -->
 </html>

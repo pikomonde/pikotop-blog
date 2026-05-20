@@ -619,6 +619,14 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 					pill.classList.add('active');
 					state.lang = pill.dataset.lang!;
 					applyFilters();
+
+					// ── Tracking ──
+					(window as any).dataLayer = (window as any).dataLayer || [];
+					(window as any).dataLayer.push({
+						'event': 'filter_click',
+						'filter_type': 'language',
+						'filter_value': pill.dataset.lang
+					});
 				});
 			});
 
@@ -681,6 +689,15 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 
 					renderChips();
 					applyFilters();
+
+					// ── Tracking ──
+					(window as any).dataLayer = (window as any).dataLayer || [];
+					(window as any).dataLayer.push({
+						'event': 'filter_click',
+						'filter_type': type,      // 'topic', 'series', atau 'publisher'
+						'filter_value': value,
+						'filter_action': isChecked ? 'add' : 'remove'
+					});
 				});
 			});
 
@@ -751,6 +768,15 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 						renderChips();
 						applyFilters();
 					}
+
+					// ── Tracking ──
+					(window as any).dataLayer = (window as any).dataLayer || [];
+					(window as any).dataLayer.push({
+						'event': 'filter_click',
+						'filter_type': 'series',
+						'filter_value': seriesValue,
+						'filter_action': 'add'
+					});
 				});
 			});
 
@@ -812,9 +838,10 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 			// Initial run to ensure featured is correctly set
 			applyFilters();
 		</script>
+
+		<!-- Google Tag Manager (noscript) -->
+		<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8F5LQD2"
+		height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+		<!-- End Google Tag Manager (noscript) -->
 	</body>
-	<!-- Google Tag Manager (noscript) -->
-	<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P8F5LQD2"
-	height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-	<!-- End Google Tag Manager (noscript) -->
 </html>
