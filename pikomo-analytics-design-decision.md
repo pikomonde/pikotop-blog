@@ -55,10 +55,12 @@ Matomo PHP dipilih karena native di cPanel (PHP + MySQL), install via Softaculou
 ```
 *.pikomo.top
     └── GTM Container (GTM-P8F5LQD2)
-            ├── Tag: GA4 - blog.pikomo.top    [⏸ PAUSED]
-            ├── Tag: GA4 - www.pikomo.top     [⏸ PAUSED]
-            ├── Tag: Matomo - blog.pikomo.top [✅ ACTIVE]  → Site ID 1
-            └── Tag: Matomo - www.pikomo.top  [⏳ PENDING] → Site ID 2
+            ├── Tag: GA4 - blog.pikomo.top         [⏸ PAUSED]
+            ├── Tag: GA4 - www.pikomo.top           [⏸ PAUSED]
+            ├── Tag: Matomo - blog.pikomo.top       [✅ ACTIVE]  → Site ID 1
+            ├── Tag: Matomo - www.pikomo.top        [⏳ PENDING] → Site ID 2
+            ├── Tag: GA4 - Blog Custom Events       [✅ ACTIVE]  → G-EES94E7BJB
+            └── Tag: Matomo - Blog Custom Events    [✅ ACTIVE]  → Site ID 1
 ```
 
 Setiap tag hanya fire di hostname yang sesuai — dikontrol via GTM trigger condition.
@@ -96,6 +98,7 @@ Setiap tag hanya fire di hostname yang sesuai — dikontrol via GTM trigger cond
 GTM → Variables → Configure → centang:
 - `Page Hostname` ✅
 - `Page URL` ✅
+- `Event` ✅ — dipakai di Matomo custom events tag
 
 ### Triggers
 
@@ -109,6 +112,12 @@ Trigger: Pageview - www.pikomo.top
   Type: Page View
   Fires on: Some Page Views
   Condition: Page Hostname equals www.pikomo.top
+
+Trigger: Custom Events - Blog Tracking
+  Type: Custom Event
+  Event name: scroll_depth|filter_click|zoom_image
+  ✅ Use regex matching
+  Fires on: All Custom Events
 ```
 
 ### GTM Snippet
@@ -138,7 +147,129 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 ---
 
-## 5. Matomo Setup
+## 4b. GTM Custom Events Setup (blog.pikomo.top)
+
+### Data Layer Variables (DLV)
+
+GTM → Variables → User-Defined Variables → New, buat satu per satu (type: Data Layer Variable):
+
+| Nama Variable | Data Layer Variable Name |
+|---|---|
+| `DLV - scroll_percent` | `scroll_percent` |
+| `DLV - filter_type` | `filter_type` |
+| `DLV - filter_value` | `filter_value` |
+| `DLV - filter_action` | `filter_action` |
+| `DLV - image_alt` | `image_alt` |
+| `DLV - page_title` | `page_title` |
+
+Tidak perlu buat `DLV - event` — pakai built-in `{{Event}}` saja.
+
+### Tag: GA4 - Blog Custom Events
+
+- Tag Type: GA4 Event
+- Measurement ID: `G-EES94E7BJB`
+- Event Name: `{{Event}}`
+- Event Parameters:
+
+| Parameter Name | Value |
+|---|---|
+| `scroll_percent` | `{{DLV - scroll_percent}}` |
+| `filter_type` | `{{DLV - filter_type}}` |
+| `filter_value` | `{{DLV - filter_value}}` |
+| `filter_action` | `{{DLV - filter_action}}` |
+| `image_alt` | `{{DLV - image_alt}}` |
+| `page_title` | `{{DLV - page_title}}` |
+
+- Triggering: `Custom Events - Blog Tracking`
+
+### Tag: Matomo - Blog Custom Events
+
+- Tag Type: Custom HTML
+- Triggering: `Custom Events - Blog Tracking`
+
+```html
+<script>
+window._paq = window._paq || [];
+
+var eventConfigs = {
+  'scroll_depth': {
+    category: 'Scroll',
+    action: 'Depth',
+    name: {{DLV - scroll_percent}}
+  },
+  'filter_click': {
+    category: 'Filter',
+    action: {{DLV - filter_type}},
+    name: {{DLV - filter_value}} + ' (' + {{DLV - filter_action}} + ')'
+  },
+  'zoom_image': {
+    category: 'Image',
+    action: 'Zoom',
+    name: {{DLV - image_alt}}
+  }
+};
+
+var eventName = {{Event}};
+var config = eventConfigs[eventName];
+if (config) {
+  _paq.push(['trackEvent', config.category, config.action, config.name]);
+}
+</script>
+```
+
+**Catatan Matomo:** Tidak perlu pass `page_title` — Matomo otomatis group event berdasarkan halaman dari pageview tracking. Lihat data di: Behaviour → Events → drill down per category.
+
+### dataLayer Push Format (di kode Astro)
+
+Semua custom event pakai format ini — push event, lalu **reset** variable setelahnya supaya tidak persistent ke event berikutnya:
+
+```js
+// Scroll depth (BlogPost.astro)
+window.dataLayer.push({
+    'event': 'scroll_depth',
+    'scroll_percent': mark + '%',
+    'page_title': document.title
+});
+window.dataLayer.push({ 'scroll_percent': undefined, 'page_title': undefined });
+
+// Filter click (index.astro)
+window.dataLayer.push({
+    'event': 'filter_click',
+    'filter_type': type,
+    'filter_value': value,
+    'filter_action': isChecked ? 'add' : 'remove'
+});
+window.dataLayer.push({ 'filter_type': undefined, 'filter_value': undefined, 'filter_action': undefined });
+
+// Zoom image (ZoomImage.astro)
+window.dataLayer.push({
+    'event': 'zoom_image',
+    'image_alt': srcImg.alt || 'no-alt',
+    'page_title': document.title
+});
+window.dataLayer.push({ 'image_alt': undefined, 'page_title': undefined });
+```
+
+**Kenapa reset?** dataLayer bersifat persistent dalam satu page session — tanpa reset, variable lama ikut terbawa ke event berikutnya.
+
+### GA4 Custom Dimensions yang sudah didaftarkan
+
+GA4 → Admin → Custom Definitions → Custom Dimensions:
+
+| Display Name | Scope | Event Parameter |
+|---|---|---|
+| `scroll_percent` | Event | `scroll_percent` |
+| `filter_type` | Event | `filter_type` |
+| `filter_value` | Event | `filter_value` |
+| `filter_action` | Event | `filter_action` |
+| `image_alt` | Event | `image_alt` |
+| `event_label` | Event | `event_label` |
+| `destination` | Event | `destination` |
+| `address` | Event | `address` |
+
+**Catatan:** Custom dimensions perlu 24-48 jam setelah didaftarkan sebelum data muncul di reports. Data sebelum pendaftaran tidak bisa direcovery di UI.
+
+---
 
 **URL:** `https://internal.pikomo.top/analytics`
 **Stack:** PHP + MySQL, install via Softaculous
@@ -290,11 +421,15 @@ Pasang kalau dashboard Matomo terasa lambat saat buka laporan:
 - [ ] Set data retention 12 bulan (Administration → Privacy → Data Retention)
 - [ ] Tambah `.htaccess` `Options -Indexes` di `internal.pikomo.top` kalau belum ada
 - [X] Tambah noscript GTM di `BlogPost.astro` dan `index.astro` setelah tag `<body>`
+- [X] Setup custom events tracking: scroll depth, filter clicks, zoom image
+- [X] Daftarkan custom dimensions di GA4
+- [X] Setup DLV dan tags di GTM untuk custom events
 
 ### www.pikomo.top
 
 - [ ] Pasang GTM snippet di `www/index.html` — hapus blok gtag.js lama, ganti dengan GTM snippet
 - [ ] Pasang noscript GTM setelah `<body>`
+- [ ] Ganti semua `gtag('event', ...)` ke `dataLayer.push()` — events: `navigation_click`, `toggle_theme`, `crypto_modal_open`, `wallet_copy`
 - [ ] Verifikasi GTM Preview Mode untuk `www.pikomo.top` — pastikan tag Matomo firing, GA4 tidak
 
 ### Nanti (kalau sudah ada sitenya)
