@@ -15,6 +15,8 @@ author: "Piko Monde"
 ---
 
 import ZoomImage from '../../components/ZoomImage.astro';
+import TLDRBox from '../../components/TLDRBox.astro';
+
 import imgFlamegraphA from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-rbac-json-unmarshal-go.webp';
 import imgFlamegraphB from '../../assets/how-we-saved-iot-service-200-to-20000-rps/pprof-flamegraph-bcrypt-hotpath-cpu-saturation.webp';
 import imgThisIsFine from '../../assets/how-we-saved-iot-service-200-to-20000-rps/this-is-fine-meme-self-inflicted-ddos.webp';
@@ -26,6 +28,10 @@ import imgArchDiagram from '../../assets/how-we-saved-iot-service-200-to-20000-r
   on-demand pricing. Exact costs were never shared with me as a
   contractor. Always frame this as an estimate — never as a confirmed number.
 */}
+
+<TLDRBox>
+  A ~27-node AWS cluster estimated to cost north of $42k/month couldn't handle 200 RPS — because every telemetry ping from thousands of connected vehicles was running bcrypt.CompareHashAndPassword on the hot path. Bcrypt is designed to be slow (it's for login flows, not IoT data streams), so we were essentially DDoS-ing ourselves. The fix: cache the validated credential as a SHA-256 hash in Redis with a 30-second TTL, then wrap the Bcrypt call in singleflight to prevent thundering herd on cache expiry. Result: 27 nodes → 2 instances, 200 RPS → 20,000+ RPS.
+</TLDRBox>
 
 In the world of high-concurrency systems, throwing more hardware at a problem is often the most expensive way to fail. Recently, I revisited some investigation logs and Go pprof profiles from a project I handled four years ago as a contractor for an Automobile IoT company. At the time, the company was managing telemetry for tens of thousands of connected vehicles.
 
