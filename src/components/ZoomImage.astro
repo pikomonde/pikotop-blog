@@ -222,6 +222,10 @@ const id = Math.random().toString(36).slice(2, 8);
           'image_alt': srcImg.alt || 'no-alt',
           'page_title': document.title
       });
+      window.dataLayer.push({
+          'image_alt': undefined,
+          'page_title': undefined
+      });
     }
 
     function close() {

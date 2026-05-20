@@ -544,6 +544,10 @@ const initials = author
 								'scroll_percent': mark + '%',
 								'page_title': document.title
 							});
+							(window as any).dataLayer.push({
+								'scroll_percent': undefined,
+								'page_title': undefined
+							});
 						}
 					});
 				}, { passive: true });

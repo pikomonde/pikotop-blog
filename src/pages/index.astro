@@ -627,6 +627,10 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 						'filter_type': 'language',
 						'filter_value': pill.dataset.lang
 					});
+					(window as any).dataLayer.push({
+						'filter_type': undefined,
+						'filter_value': undefined
+					});
 				});
 			});
 
@@ -697,6 +701,11 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 						'filter_type': type,      // 'topic', 'series', atau 'publisher'
 						'filter_value': value,
 						'filter_action': isChecked ? 'add' : 'remove'
+					});
+					(window as any).dataLayer.push({
+						'filter_type': undefined,
+						'filter_value': undefined,
+						'filter_action': undefined
 					});
 				});
 			});
@@ -776,6 +785,11 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 						'filter_type': 'series',
 						'filter_value': seriesValue,
 						'filter_action': 'add'
+					});
+					(window as any).dataLayer.push({
+						'filter_type': undefined,
+						'filter_value': undefined,
+						'filter_action': undefined
 					});
 				});
 			});
