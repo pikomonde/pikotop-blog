@@ -370,7 +370,13 @@ Taruh tepat sebelum paragraf pertama, sesudah judul/subtitle platform.
 
 ### Di akhir artikel (CTA)
 
-> *If this was useful, find more posts at [blog.pikomo.top](https://blog.pikomo.top) — or connect on [LinkedIn](https://linkedin.com/in/piko-monde) · [GitHub](https://github.com/pikomonde) · [Ko-fi](https://ko-fi.com/pikomonde)*
+**Untuk platform eksternal (Medium, Dev.to, Hackernoon, dll.):**
+
+> *More posts at [blog.pikomo.top](https://blog.pikomo.top) · [GitHub](https://github.com/pikomonde). If this saved you some debugging time, [Ko-fi](https://ko-fi.com/pikomonde) is always appreciated.*
+
+**Untuk Astro blog (BlogPost.astro):**
+
+> *[GitHub](https://github.com/pikomonde) · If this saved you some debugging time, [Ko-fi](https://ko-fi.com/pikomonde) is always appreciated.*
 
 Taruh setelah paragraf terakhir konten, sebelum tag/topic platform.
 
@@ -379,7 +385,10 @@ Ko-fi disebut di penutup artikel saja — tidak diulang di footer blog supaya ti
 
 ### Catatan
 
-- Cukup link ke `blog.pikomo.top` saja — tidak perlu link ke artikel spesifik lain
+- Link ke `blog.pikomo.top` (homepage), bukan ke artikel spesifik — tidak perlu diupdate tiap artikel baru. Pengecualian: kalau ada artikel seri lanjutan yang sudah publish, boleh link langsung dengan konteks eksplisit, misal *"Part 2 is already up: [judul]"*
+- LinkedIn dihapus dari CTA artikel — sudah ada di footer www.pikomo.top dan links.pikomo.top
+- `links.pikomo.top` tidak perlu disebut di CTA artikel — lebih tepat di bio platform
+- Di Astro blog, link "more posts" dihilangkan karena pembaca sudah ada di blog; related posts section sudah menghandle ini
 - Tidak perlu tambah link `/support` di CTA artikel — terlalu banyak pilihan justru mengurangi konversi
 - Canonical URL di settings platform (Medium: "Import story" atau canonical field, Dev.to: `canonical_url` di frontmatter) tetap wajib diset ke URL artikel spesifik di blog
 
