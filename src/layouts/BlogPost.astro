@@ -535,7 +535,7 @@ const initials = author
 					const total = document.body.scrollHeight - window.innerHeight;
 					if (total <= 0) return;
 					const percent = Math.round((scrolled / total) * 100);
-					[25, 50, 75, 100].forEach(mark => {
+					[25, 50, 75, 90].forEach(mark => {
 						if (percent >= mark && !scrollMarks.has(mark)) {
 							scrollMarks.add(mark);
 							(window as any).dataLayer = (window as any).dataLayer || [];
