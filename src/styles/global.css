@@ -163,6 +163,38 @@ figcaption {
   margin-top: 0.5rem;
 }
 
+/* ─── Table ─────────────────────────────────────────────────────── */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  margin-bottom: 1.5rem;
+}
+
+.prose thead tr {
+  background: var(--bg2);
+}
+
+.prose th,
+.prose td {
+  padding: 10px 14px;
+  text-align: left;
+  border: 0.5px solid var(--border2);
+}
+
+.prose th {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.prose td {
+  color: var(--text);
+}
+
+.prose tbody tr:nth-child(even) {
+  background: var(--bg2);
+}
+
 /* ─── Code ───────────────────────────────────────────────────────── */
 code {
 	padding: 2px 5px;
