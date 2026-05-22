@@ -81,8 +81,8 @@ The profile at this stage looked something like this — JSON unmarshalling is v
   <ZoomImage
     src={imgFlamegraphA}
     alt="Go pprof flamegraph showing RBAC JSON unmarshalling consuming around 20-30% CPU — visible but not catastrophic"
-    width={3203}
-    height={3471}
+    width={1550}
+    height={782}
   />
   <figcaption>
     Figure 1A: Initial pprof profile — RBAC JSON unmarshalling is the largest consumer, but the overall picture still looks manageable. (Reproduced on a test service for illustration; the original production profiles are proprietary.)
@@ -105,8 +105,8 @@ This is what the new profile looked like. Same service, same endpoint — spot t
   <ZoomImage
     src={imgFlamegraphB}
     alt="Go pprof flamegraph showing bcrypt.CompareHashAndPassword consuming 95%+ of total CPU after adding the IoT device header"
-    width={1199}
-    height={2023}
+    width={1550}
+    height={782}
   />
   <figcaption>
     Figure 1B: Profile after adding the IoT device header. bcrypt.CompareHashAndPassword has consumed almost everything — there is almost nothing else left. (Reproduced on a test service for illustration.)
