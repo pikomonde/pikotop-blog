@@ -21,12 +21,24 @@ const fullTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`
 
 <meta charset="utf-8" />
 
-<!-- Anti-FOUC: must run before first paint -->
 <script is:inline>
+  // Anti-FOUC: must run before first paint
   (function() {
     var saved = localStorage.getItem('theme');
     if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
+    }
+  })();
+
+  // Font fallback for Windows 7 and earlier
+  (function() {
+    var ua = navigator.userAgent;
+    var match = ua.match(/Windows NT (\d+\.\d+)/);
+    if (match) {
+      var version = parseFloat(match[1]);
+      if (version <= 6.1) { // 6.1 = Windows 7, 6.0 = Vista, 5.1 = XP, etc
+        document.documentElement.classList.add('legacy-font');
+      }
     }
   })();
 </script>
