@@ -120,7 +120,7 @@ This is what the new profile looked like. Same service, same endpoint — spot t
 
 ## The Bcrypt Implementation Issue: Self-Inflicted DDoS
 
-The flame graph was unmistakable. A single function was consuming 95%+ of total CPU time: `bcrypt.CompareHashAndPassword`.
+The flame graph was unmistakable. A single function was consuming over 80% of the total CPU time: `bcrypt.CompareHashAndPassword`.
 
 We discovered that for every single telemetry ping — sent by thousands of vehicles every few seconds — the system was executing a Bcrypt comparison.
 
@@ -141,17 +141,17 @@ From an architectural perspective, this is a catastrophic anti-pattern. Bcrypt i
   </figcaption>
 </figure>
 
-While the intention was to have high security for every data point, the implementation was impractical. For high-frequency IoT data, the industry standard is to use Bcrypt only during the initial handshake to exchange credentials for a lightweight session token or a short-lived JWT. Once authenticated, subsequent telemetry should be validated using symmetric keys or token lookups — orders of magnitude faster than Bcrypt.
+While the intention was to have high security for every data point, the implementation was impractical. For high-frequency IoT data, the industry standard is to use Bcrypt only during the initial handshake to exchange credentials for a lightweight session token or a short-lived JWT (JSON Web Token). Once authenticated, subsequent telemetry should be validated using symmetric keys or token lookups, which are orders of magnitude faster than Bcrypt.
 
 ## The Solution: Caching and Singleflight
 
-Since we couldn't update the firmware of thousands of vehicles overnight, we had to build a server-side "shield."
+Since we couldn't update the firmware of thousands of vehicles overnight, we had to build a server-side "shield".
 
 ### Implementing the Cache
 
 I consulted with the Security team first. The whole point of Bcrypt is to prevent brute-forcing, so I asked: *"If we cache the successful validation result, is it still secure?"* They gave us the green light.
 
-We introduced a caching layer. After a successful Bcrypt validation, we stored the **SHA-256 hash** of the device credentials in Redis with a **30-second TTL**. For any subsequent request within that window, the server would simply compare the SHA-256 hashes — a process that takes nanoseconds — instead of running the Bcrypt algorithm.
+We introduced a caching layer. After a successful Bcrypt validation, we stored the **SHA-256 hash** of the device credentials in Redis with a **30-second TTL** (Time to Live). For any subsequent request within that window, the server would simply compare the SHA-256 hashes — a process that takes nanoseconds — instead of running the Bcrypt algorithm.
 
 ### Resolving the Thundering Herd with Singleflight
 
