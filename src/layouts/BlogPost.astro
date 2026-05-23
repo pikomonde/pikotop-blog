@@ -331,7 +331,7 @@ const initials = author
 			}
 			.related-img {
 				width: 100%;
-				aspect-ratio: 16 / 9;
+				/* aspect-ratio: 16 / 9; */
 				overflow: hidden;
 				background: var(--bg3);
 				flex-shrink: 0;
@@ -498,7 +498,7 @@ const initials = author
 								>
 									<div class="related-img">
 										{p.data.heroImage ? (
-											<Image width={400} height={225} src={p.data.heroImage} alt="" />
+											<Image width={1600} height={630} src={p.data.heroImage} alt="" />
 										) : (
 											<div class="related-img-placeholder">No image</div>
 										)}
