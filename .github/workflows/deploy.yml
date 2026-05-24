@@ -48,3 +48,21 @@ jobs:
           remote_user: ${{ secrets.SSH_USER }}
           remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
           remote_port: 64000
+
+      # Step 3: Purge Cloudflare Cache
+      - name: Purge Cloudflare Cache
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "hosts": ["blog.pikomo.top"]
+            }'
+        # TODO: purge by updated file on Astro
+        # "purge_everything": true
+        # "hosts": ["blog.pikomo.top"]
+        # "files": [
+        #   "https://blog.pikomo.top/some-post/",
+        #   "https://blog.pikomo.top/assets/hero-image.webp"
+        # ]
+        # "prefixes": ["blog.pikomo.top/assets/"] // notavailable on CloudFlare Free
