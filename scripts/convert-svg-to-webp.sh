@@ -18,7 +18,7 @@ OUTPUT_FILE="${FILENAME}.webp"
 
 # 5. Run the conversion pipeline
 echo "Converting $INPUT_FILE to $OUTPUT_FILE..."
-rsvg-convert --dpi-x=300 --dpi-y=300 -f png "$INPUT_FILE" | cwebp -q 80 -o "$OUTPUT_FILE" -- -
+rsvg-convert --dpi-x=300 --dpi-y=300 -f png "$INPUT_FILE" | cwebp -q 50 -o "$OUTPUT_FILE" -- -
 
 # 6. Check if the conversion was successful
 if [ $? -eq 0 ]; then
