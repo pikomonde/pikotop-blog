@@ -542,6 +542,8 @@ const allPublishers = [...new Set(posts.flatMap((p) => Object.keys(p.data.publis
 										height={index === 0 ? 315 : 210}
 										src={post.data.heroImage}
 										alt=""
+										loading={index === 0 ? "eager" : null}
+										fetchpriority={index === 0 ? "high" : null} 
 									/>
 								) : (
 									<div class="post-img-placeholder">No image</div>
