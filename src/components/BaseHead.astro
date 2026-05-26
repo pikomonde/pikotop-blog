@@ -60,6 +60,7 @@ const fullTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
+<link rel="preload" as="image" href={new URL(image.src, Astro.url)} fetchpriority="high" />
 
 <!-- Primary Meta Tags -->
 <title>{fullTitle}</title>
@@ -90,4 +91,3 @@ const fullTitle = title === SITE_TITLE ? SITE_TITLE : `${title} | ${SITE_TITLE}`
     j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
   })(window,document,'script','dataLayer','GTM-P8F5LQD2');
 </script>
-<!-- End Google Tag Manager -->
