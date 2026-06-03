@@ -376,7 +376,7 @@ Taruh tepat sebelum paragraf pertama, sesudah judul/subtitle platform.
 
 **Untuk Astro blog (BlogPost.astro):**
 
-> *[GitHub](https://github.com/pikomonde) · If this saved you some debugging time, [Ko-fi](https://ko-fi.com/pikomonde) is always appreciated.*
+> More projects on *[GitHub](https://github.com/pikomonde) · If this saved you some debugging time, [Ko-fi](https://ko-fi.com/pikomonde) is always appreciated.*
 
 Taruh setelah paragraf terakhir konten, sebelum tag/topic platform.
 
