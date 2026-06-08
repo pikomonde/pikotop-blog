@@ -1,2 +1,9 @@
 DirectoryIndex index.html
 Options -Indexes
+
+# === Caching: paired with Cloudflare "Use cache-control header if present" ===
+<IfModule mod_headers.c>
+  # HTML cached 1 day;
+  # challenge page (no-store) automatically not cached
+    Header set Cache-Control "public, max-age=86400"
+</IfModule>
