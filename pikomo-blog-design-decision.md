@@ -64,7 +64,11 @@ const blog = defineCollection({
       updatedDate: z.coerce.date().optional(),
       heroImage: z.optional(image()),
       tagTopics: z.array(z.string()).default(['General']),
-      tagSeries: z.optional(z.array(z.string())), // konvensi editorial: maks 1 series per artikel
+      tagSeries: z.optional(z.array(z.string())),   // support multiple series per artikel
+      seriesOrder: z.record(z.string(), z.number()).optional(),
+      // Contoh: { "TIL (Today I Learn)": 2, "Modern AI Infrastructure": 3 }
+      // Kalau tidak diisi, fallback ke pubDate ascending.
+      // Infinity behavior: artikel tanpa order nempel di akhir series.
       lang: z.enum(['id', 'en']).default('en'),
       publishedOn: z.record(z.string(), z.string()).optional(),
       // Contoh: { medium: "https://...", devto: "https://...", towardsDataScience: "https://..." }
@@ -74,7 +78,8 @@ const blog = defineCollection({
 ```
 
 **Catatan schema:**
-- `tagSeries` tetap array di schema tapi konvensi editorial: **1 artikel = 1 series**
+- `tagSeries` array — sekarang support **multiple series per artikel**
+- `seriesOrder` adalah map dari nama series ke urutan (number). Opsional — kalau tidak diisi, urutan fallback ke `pubDate` ascending. Artikel tanpa `seriesOrder` akan nempel di akhir series di antara sesama artikel tanpa order.
 - `publishedOn` adalah key-value bebas untuk nama publisher dan URL-nya
 - `author` ditambahkan — default `'Piko Monde'`, tidak wajib diisi di frontmatter
 - `tagLevels` sudah **dihapus** dari schema — tidak dipakai
@@ -123,10 +128,15 @@ Urutan dari kiri ke kanan:
 
 ### Urutan Elemen
 1. Hero image (full width, `border-radius: 12px`, box-shadow)
-2. Series bar — **hanya muncul jika ada `tagSeries`**:
-   - Format: `Part of series: [nama clickable] · N of M`
+2. Series bar — **satu bar per series**, hanya muncul jika ada `tagSeries`**:
+   - Format: `Part of series: [nama clickable] · N of M  « ‹ Prev  Next ›`
    - Klik nama series → redirect ke `/?series=[nama]` (homepage dengan filter aktif)
-   - N of M dihitung dari semua artikel yang punya series sama, diurutkan `pubDate` ascending
+   - N of M dihitung dari semua artikel yang punya series sama
+   - Urutan: pakai `seriesOrder[seriesName]` kalau ada, fallback ke `pubDate` ascending
+   - Navigasi prev/next/first:
+     - `«` → artikel pertama di series (disembunyikan kalau sudah di artikel pertama)
+     - `‹ Prev` → artikel sebelumnya (disembunyikan kalau sudah di artikel pertama)
+     - `Next ›` → artikel berikutnya (disembunyikan kalau sudah di artikel terakhir)
 3. Tags: topics (biru) + lang badge
 4. Judul artikel (`h1`, `clamp(1.6rem, 4vw, 2.2rem)`)
 5. Meta bar: avatar initials + nama author · Published [date] + Updated [date jika ada, italic]
