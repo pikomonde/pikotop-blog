@@ -18,19 +18,20 @@ const allPosts = (await getCollection('blog'))
 // ── Series ────────────────────────────────────────────────────────
 // Count how many posts share this series, and find this post's position.
 
-let seriesTotal = 0;
-let seriesIndex = 0;
-const currentSeries = tagSeries?.[0];
-
-if (currentSeries) {
-	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(currentSeries));
-	seriesTotal = postsInSeries.length;
-	// Match by title since we're inside a layout, not a collection entry.
-	const idx = postsInSeries.findIndex((p) => p.data.title === title);
-	seriesIndex = idx >= 0 ? idx + 1 : 1;
+interface SeriesInfo {
+	name: string;
+	index: number;
+	total: number;
 }
 
-const hasSeries = currentSeries && seriesTotal > 0;
+const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
+	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(name));
+	const total = postsInSeries.length;
+	const idx = postsInSeries.findIndex((p) => p.data.title === title);
+	return { name, index: idx >= 0 ? idx + 1 : 1, total };
+});
+
+const hasSeries = seriesList.length > 0;
 
 // ── Related / Recommended Posts ───────────────────────────────────
 // Scoring priority: same series (10pts) > topic overlap (3pts each) > recency boost.
@@ -416,19 +417,18 @@ const initials = author
 			)}
 
 			<!-- Series Bar (only if has series) -->
-			{hasSeries && (
+			{hasSeries && seriesList.map((s) => (
 				<div class="series-bar">
 					<span class="series-label">Part of series:</span>
 					<a
 						class="series-link"
-						href={`/?series=${encodeURIComponent(currentSeries)}`}
+						href={`/?series=${encodeURIComponent(s.name)}`}
 					>
-						{currentSeries}
+						{s.name}
 					</a>
-					<span class="series-part">{seriesIndex} of {seriesTotal}</span>
+					<span class="series-part">{s.index} of {s.total}</span>
 				</div>
-			)}
-
+			))}
 			<!-- Tags -->
 			<div class="article-tags">
 				{(tagTopics ?? []).map((t: string) => (
