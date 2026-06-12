@@ -22,6 +22,9 @@ interface SeriesInfo {
 	name: string;
 	index: number;
 	total: number;
+	firstUrl: string | null;
+	prevUrl:  string | null;
+	nextUrl:  string | null;
 }
 
 const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
@@ -37,7 +40,19 @@ const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
 
   const total = postsInSeries.length;
   const idx = postsInSeries.findIndex((p) => p.data.title === title);
-  return { name, index: idx >= 0 ? idx + 1 : 1, total };
+  const index = idx >= 0 ? idx + 1 : 1;
+
+  // Nav links
+  const firstPost = postsInSeries[0];
+  const prevPost  = idx > 0 ? postsInSeries[idx - 1] : null;
+  const nextPost  = idx >= 0 && idx < total - 1 ? postsInSeries[idx + 1] : null;
+
+  const isFirst = idx === 0;
+  const firstUrl = !isFirst ? `/${firstPost.id}/` : null;
+  const prevUrl  = prevPost ? `/${prevPost.id}/` : null;
+  const nextUrl  = nextPost ? `/${nextPost.id}/` : null;
+
+  return { name, index, total, firstUrl, prevUrl, nextUrl };
 });
 
 const hasSeries = seriesList.length > 0;
@@ -157,6 +172,27 @@ const initials = author
 				color: var(--series-text);
 				opacity: 0.7;
 				margin-left: auto;
+			}
+			.series-nav {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				margin-left: 8px;
+			}
+			.series-nav-btn {
+				font-size: 12px;
+				color: var(--series-text);
+				background: transparent;
+				border: 0.5px solid var(--series-text);
+				border-radius: 4px;
+				padding: 1px 7px;
+				text-decoration: none;
+				opacity: 0.75;
+				transition: opacity 0.15s;
+			}
+			.series-nav-btn:hover {
+				opacity: 1;
+				color: var(--series-text);
 			}
 
 			/* ─── Tags ───────────────────────────────────────────── */
@@ -427,17 +463,30 @@ const initials = author
 
 			<!-- Series Bar (only if has series) -->
 			{hasSeries && seriesList.map((s) => (
-				<div class="series-bar">
-					<span class="series-label">Part of series:</span>
-					<a
-						class="series-link"
-						href={`/?series=${encodeURIComponent(s.name)}`}
-					>
-						{s.name}
-					</a>
-					<span class="series-part">{s.index} of {s.total}</span>
+			<div class="series-bar">
+				<span class="series-label">Part of series:</span>
+				<a
+					class="series-link"
+					href={`/?series=${encodeURIComponent(s.name)}`}
+				>
+				{s.name}
+				</a>
+				<span class="series-part">{s.index} of {s.total}</span>
+
+				<div class="series-nav">
+				{s.firstUrl && (
+					<a class="series-nav-btn" href={s.firstUrl} title="First article">«</a>
+				)}
+				{s.prevUrl && (
+					<a class="series-nav-btn" href={s.prevUrl} title="Previous">‹ Prev</a>
+				)}
+				{s.nextUrl && (
+					<a class="series-nav-btn" href={s.nextUrl} title="Next">Next ›</a>
+				)}
 				</div>
+			</div>
 			))}
+
 			<!-- Tags -->
 			<div class="article-tags">
 				{(tagTopics ?? []).map((t: string) => (
