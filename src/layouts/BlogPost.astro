@@ -25,10 +25,19 @@ interface SeriesInfo {
 }
 
 const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
-	const postsInSeries = allPosts.filter((p) => p.data.tagSeries?.includes(name));
-	const total = postsInSeries.length;
-	const idx = postsInSeries.findIndex((p) => p.data.title === title);
-	return { name, index: idx >= 0 ? idx + 1 : 1, total };
+  const postsInSeries = allPosts
+    .filter((p) => p.data.tagSeries?.includes(name))
+    .sort((a, b) => {
+      // Kalau ada seriesOrder, pakai itu. Kalau tidak, fallback ke pubDate.
+      const orderA = a.data.seriesOrder?.[name] ?? Infinity;
+      const orderB = b.data.seriesOrder?.[name] ?? Infinity;
+      if (orderA !== orderB) return orderA - orderB;
+      return a.data.pubDate.valueOf() - b.data.pubDate.valueOf();
+    });
+
+  const total = postsInSeries.length;
+  const idx = postsInSeries.findIndex((p) => p.data.title === title);
+  return { name, index: idx >= 0 ? idx + 1 : 1, total };
 });
 
 const hasSeries = seriesList.length > 0;
