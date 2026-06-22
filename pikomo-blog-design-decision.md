@@ -70,6 +70,12 @@ const blog = defineCollection({
       // Kalau tidak diisi, fallback ke pubDate ascending.
       // Infinity behavior: artikel tanpa order nempel di akhir series.
       lang: z.enum(['id', 'en']).default('en'),
+      translationKey: z.string().optional(),
+      // Identifier netral yang menghubungkan artikel-artikel terjemahan satu sama lain.
+      // Bukan reference ke filename/slug siapa pun — semua versi bahasa cuma "berbagi" key ini.
+      // Contoh: apa-itu-pemrograman.mdx (lang: id) dan what-is-programming.mdx (lang: en)
+      // sama-sama punya translationKey: "what-is-programming". Opsional — artikel tanpa
+      // pasangan bahasa tidak perlu mengisi field ini.
       publishedOn: z.record(z.string(), z.string()).optional(),
       // Contoh: { medium: "https://...", devto: "https://...", towardsDataScience: "https://..." }
       author: z.string().default('Piko Monde'),
@@ -80,6 +86,7 @@ const blog = defineCollection({
 **Catatan schema:**
 - `tagSeries` array — sekarang support **multiple series per artikel**
 - `seriesOrder` adalah map dari nama series ke urutan (number). Opsional — kalau tidak diisi, urutan fallback ke `pubDate` ascending. Artikel tanpa `seriesOrder` akan nempel di akhir series di antara sesama artikel tanpa order.
+- `translationKey` — lihat section [Bilingual Support](#bilingual-support) untuk detail lengkap (helper function, konvensi foldering, UI di card & artikel)
 - `publishedOn` adalah key-value bebas untuk nama publisher dan URL-nya
 - `author` ditambahkan — default `'Piko Monde'`, tidak wajib diisi di frontmatter
 - `tagLevels` sudah **dihapus** dari schema — tidak dipakai
@@ -115,7 +122,7 @@ Urutan dari kiri ke kanan:
 
 ### Informasi di Kartu Artikel
 - Hero image (16:9)
-- Tags: series (amber) + topics (biru) + lang badge
+- Tags: series (amber) + topics (biru) + lang badge + translation badge (jika punya pasangan `translationKey`)
 - Judul artikel
 - Deskripsi singkat (2 baris, `-webkit-line-clamp: 2`)
 - Published date + updated date (jika ada, italic)
@@ -139,13 +146,201 @@ Urutan dari kiri ke kanan:
      - `Next ›` → artikel berikutnya (disembunyikan kalau sudah di artikel terakhir)
 3. Tags: topics (biru) + lang badge
 4. Judul artikel (`h1`, `clamp(1.6rem, 4vw, 2.2rem)`)
-5. Meta bar: avatar initials + nama author · Published [date] + Updated [date jika ada, italic]
+5. Meta bar: avatar initials + nama author · Published [date] + Updated [date jika ada, italic] · translation link (jika punya pasangan `translationKey`)
 6. Konten artikel (MDX via `<slot />`)
 7. **"Also published on"** — hanya muncul jika `publishedOn` ada dan tidak kosong — badge link per platform, `target="_blank"`
 
 ### Tanggal
 - Keduanya ditampilkan: published + updated
 - Updated hanya ditampilkan jika ada, dengan style italic
+
+---
+
+## Bilingual Support
+
+### `translationKey` — konsep dasar
+
+`translationKey` (string, opsional) di schema adalah identifier netral yang menghubungkan artikel-artikel terjemahan. Bukan reference satu arah ke filename/slug tertentu — semua versi bahasa cuma "berbagi" key yang sama, sehingga menambah bahasa ketiga nanti tidak perlu mengedit file yang sudah ada.
+
+### Helper function: `src/utils/translations.ts`
+
+```ts
+import type { CollectionEntry } from 'astro:content';
+
+type BlogPost = CollectionEntry<'blog'>;
+
+export function getTranslations(post: BlogPost, allPosts: BlogPost[]): BlogPost[] {
+	const key = post.data.translationKey;
+	if (!key) return [];
+	return allPosts.filter(
+		(p) => p.id !== post.id && p.data.translationKey === key && p.data.lang !== post.data.lang
+	);
+}
+
+const LANG_LABEL: Record<string, string> = { id: 'ID', en: 'EN' };
+export function langLabel(lang: string): string {
+	return LANG_LABEL[lang] ?? lang.toUpperCase();
+}
+```
+
+### Konvensi foldering (bukan rule di kode — folder 100% agnostik)
+
+`glob` pattern (`**/*.{md,mdx}`) sudah recursive, jadi folder TIDAK punya pengaruh terhadap logic apa pun — semua logic baca dari field frontmatter. Folder murni untuk kerapian penulis. Konvensi yang dipakai:
+
+- **Folder by `translationKey`** — kalau artikel standalone yang bilingual (bukan bagian series).
+- **Folder by series** — kalau artikel bagian dari series (prioritas di atas translationKey kalau keduanya berlaku untuk artikel yang sama).
+
+Contoh:
+```
+content/blog/
+  what-is-rag/
+    apa-itu-rag.mdx        (lang: id, translationKey: "what-is-rag")
+    what-is-rag.mdx        (lang: en, translationKey: "what-is-rag")
+  series-algoritma-komputer/
+    apa-itu-pemrograman.mdx
+    apa-itu-algoritma.mdx
+```
+
+### UI — Card (`index.astro`)
+
+Chip kecil bentuk pill, sejajar dengan lang badge di baris tag. Format: `↔ also ID` / `↔ also EN`. Klik → redirect ke artikel pasangannya.
+
+Card seluruhnya sudah berupa `<a>`, jadi badge ini pakai `<span data-translation-href>` + JS click handler (`stopPropagation` + redirect manual), bukan nested `<a>` (invalid HTML).
+
+```astro
+{translations.length > 0 && (
+  <>
+    {translations.map((t) => (
+      <span class="translation-badge" data-translation-href={`/${t.id}/`}>
+        ↔ also {langLabel(t.data.lang)}
+      </span>
+    ))}
+  </>
+)}
+```
+
+```css
+.translation-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px dashed var(--text3);
+  color: var(--text2);
+  cursor: pointer;
+}
+.translation-badge:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+```
+
+```ts
+// di <script> index.astro
+document.querySelectorAll<HTMLElement>('.translation-badge').forEach((badge) => {
+  badge.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const href = badge.dataset.translationHref;
+    if (href) window.location.href = href;
+  });
+});
+```
+
+### UI — Halaman Artikel (`BlogPost.astro`)
+
+Tampil di `.article-meta`, **sejajar** dengan avatar/author/dates (bukan di dalam `.meta-dates`, dan bukan box/section terpisah seperti "Also published on"). Dipisah dengan `.meta-sep` yang sama dengan elemen lain di meta bar.
+
+Styling pill, konsisten dengan warna `.tag.topic` (biru lembut) — dipilih daripada teks link polos karena fungsinya lebih dekat ke "info kategori" daripada call-to-action besar.
+
+Teks link full phrase (bukan kode bahasa), berdasarkan `lang` tujuan:
+- `↔ Read in English`
+- `↔ Baca dalam Bahasa Indonesia`
+
+```astro
+<div class="article-meta">
+  <div class="avatar">{initials}</div>
+  <span class="meta-author">{author}</span>
+  <span class="meta-sep">·</span>
+  <div class="meta-dates">
+    <div>Published <FormattedDate date={pubDate} /></div>
+    {updatedDate && (
+      <div class="upd">Updated <FormattedDate date={updatedDate} /></div>
+    )}
+  </div>
+  {translations.length > 0 && (
+    <>
+      <span class="meta-sep">·</span>
+      <div class="meta-other-lang">
+        {translations.map((t) => (
+          <a class="translation-meta-link" href={`/${t.id}/`}>
+            ↔ {t.data.lang === 'id' ? 'Baca dalam Bahasa Indonesia' : 'Read in English'}
+          </a>
+        ))}
+      </div>
+    </>
+  )}
+</div>
+```
+
+```css
+.meta-other-lang {
+  display: flex;
+  align-items: center;
+}
+.translation-meta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 20px;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.translation-meta-link:hover {
+  opacity: 0.8;
+}
+```
+
+### Setup pendukung di `BlogPost.astro`
+
+`BlogPost.astro` menerima props lewat `type Props = CollectionEntry<'blog'>['data']` — artinya **tidak** ada `id` di dalamnya secara default (cuma `data`, bukan entry penuh). Perlu 2 penyesuaian:
+
+```ts
+import { getTranslations, langLabel } from '../utils/translations';
+
+type Props = CollectionEntry<'blog'>['data'] & { id: string };
+const { /* ...existing destructured fields... */, id, translationKey } = Astro.props;
+
+const translations = translationKey
+	? allPosts.filter((p) => p.data.translationKey === translationKey && p.data.lang !== lang)
+	: [];
+```
+
+Dan di `[...slug].astro`, pass `id` sebagai prop tambahan:
+
+```astro
+<BlogPost {...post.data} id={post.id} />
+```
+
+### Prinsip desain elemen tambahan kecil (translation link, badge, dan sejenisnya)
+
+Dipelajari dari proses iterasi desain translation link ini — berlaku untuk elemen kecil sejenis di masa depan:
+
+- Sejajarkan dengan elemen yang levelnya sama (misal: translation link sejajar avatar/dates, bukan dipaksa nempel di dalam salah satu baris tanggal yang sudah sempit).
+- Hindari box/border besar (dashed atau solid) untuk elemen yang fungsinya sekunder — itu salah kasih sinyal "ini section penting", padahal cuma 1 baris info kecil.
+- Styling pill yang konsisten dengan sistem warna yang sudah ada (`--tag-bg`, dst.) lebih baik daripada teks link polos berwarna `--accent` saja, atau warna baru yang tidak ada di sistem.
+- Kalau implementasi mulai butuh percabangan if/else ganda demi "menumpang" di elemen lain yang sudah ada, itu sinyal untuk dijadikan elemen sendiri yang sejajar, bukan terus dipaksa nempel.
+
+### Sub-series (dibahas, di-drop untuk saat ini)
+
+Sempat didiskusikan sebagai field tambahan (`subSeries`, `subSeriesOrder`) untuk series yang punya banyak artikel dan perlu di-breakdown jadi grup lebih kecil. Tetap akan field-based, bukan folder-based, supaya kompatibel dengan konvensi foldering `translationKey` di atas. **Belum diimplementasikan** — tidak ada keputusan struktur foldering saat ini yang perlu di-undo kalau sub-series ditambah nanti.
 
 ---
 
@@ -364,7 +559,7 @@ jobs:
 
 - **Halaman Series dedicated** (`/series/[name]`) — saat ini klik series = filter di homepage. Bisa jadi fitur v2.
 - **Search** — belum dibahas, bisa jadi fitur v2.
-- **`tagSeries` sebagai folder/collection** — ide untuk nanti, belum diimplementasi.
+- **Sub-series** — lihat catatan di [Bilingual Support](#bilingual-support), belum diimplementasi.
 
 ---
 
