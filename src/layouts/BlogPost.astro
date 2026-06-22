@@ -6,10 +6,11 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
+import { getTranslations, langLabel } from '../utils/translations';
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<'blog'>['data'] & { id: string };
 
-const { title, description, pubDate, updatedDate, heroImage, tagTopics, tagSeries, lang, publishedOn, author } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, tagTopics, tagSeries, lang, publishedOn, author, id, translationKey } = Astro.props;
 
 const allPosts = (await getCollection('blog'))
 	.filter((p) => !p.data.draft)
@@ -56,6 +57,11 @@ const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
 });
 
 const hasSeries = seriesList.length > 0;
+
+// ── Translations ──────────────────────────────────────────────────
+const translations = translationKey
+	? allPosts.filter((p) => p.data.translationKey === translationKey && p.data.lang !== lang)
+	: [];
 
 // ── Related / Recommended Posts ───────────────────────────────────
 // Scoring priority: same series (10pts) > topic overlap (3pts each) > recency boost.
@@ -193,6 +199,28 @@ const initials = author
 			.series-nav-btn:hover {
 				opacity: 1;
 				color: var(--series-text);
+			}
+
+			/* ─── Other Language Bar ─────────────────────────────────── */
+			.meta-other-lang {
+				display: flex;
+				align-items: center;
+			}
+			.translation-meta-link {
+				display: inline-flex;
+				align-items: center;
+				gap: 4px;
+				background: var(--tag-bg);
+				color: var(--tag-text);
+				font-size: 12px;
+				font-weight: 500;
+				padding: 3px 10px;
+				border-radius: 20px;
+				text-decoration: none;
+				transition: opacity 0.15s;
+			}
+			.translation-meta-link:hover {
+				opacity: 0.8;
 			}
 
 			/* ─── Tags ───────────────────────────────────────────── */
@@ -509,6 +537,18 @@ const initials = author
 						<div class="upd">Updated <FormattedDate date={updatedDate} /></div>
 					)}
 				</div>
+				{translations.length > 0 && (
+					<>
+						<span class="meta-sep">·</span>
+						<div class="meta-other-lang">
+							{translations.map((t) => (
+								<a class="translation-meta-link" href={`/${t.id}/`}>
+								↔ {t.data.lang === 'id' ? 'Baca dalam Bahasa Indonesia' : 'Read in English'}
+								</a>
+							))}
+						</div>
+					</>
+				)}
 			</div>
 
 			<!-- Article Content -->

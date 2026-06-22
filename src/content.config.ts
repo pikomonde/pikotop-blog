@@ -18,6 +18,12 @@ const blog = defineCollection({
 			tagSeries: z.optional(z.array(z.string())), // Editorial convention: max 1 series per article. Example: ["Building PikoMo Blog", "Intro to Programming"]
 			seriesOrder: z.record(z.string(), z.number()).optional(),
 			lang: z.enum(['id', 'en']).default('en'),
+			// Identifier netral yang menghubungkan artikel-artikel terjemahan satu sama lain.
+			// Tidak menunjuk ke filename/slug siapa pun — semua versi bahasa cuma "berbagi" key ini.
+			// Contoh: "what-is-programming" dipakai baik oleh apa-itu-pemrograman.mdx (lang: id)
+			// maupun what-is-programming.mdx (lang: en). Opsional — artikel tanpa pasangan bahasa
+			// tidak perlu mengisi field ini.
+			translationKey: z.string().optional(),
 			publishedOn: z.record(z.string(), z.string()).optional(), // Example: { medium: "url", devto: "url", ... }
 			draft: z.boolean().default(false),
 			author: z.string().default('Piko Monde'),
