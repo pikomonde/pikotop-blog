@@ -6,7 +6,7 @@ import BaseHead from '../components/BaseHead.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
-import { getTranslations, langLabel } from '../utils/translations';
+import { dedupeByTranslation } from '../utils/translations';
 
 type Props = CollectionEntry<'blog'>['data'] & { id: string };
 
@@ -39,14 +39,18 @@ const seriesList: SeriesInfo[] = (tagSeries ?? []).map((name) => {
       return a.data.pubDate.valueOf() - b.data.pubDate.valueOf();
     });
 
-  const total = postsInSeries.length;
-  const idx = postsInSeries.findIndex((p) => p.data.title === title);
+  // Satu entry per chapter logis — pasangan terjemahan di-collapse jadi satu,
+  // prioritas ke versi bahasa yang lagi dibaca.
+  const chapters = dedupeByTranslation(postsInSeries, lang);
+
+  const total = chapters.length;
+  const idx = chapters.findIndex((p) => p.id === id);
   const index = idx >= 0 ? idx + 1 : 1;
 
   // Nav links
-  const firstPost = postsInSeries[0];
-  const prevPost  = idx > 0 ? postsInSeries[idx - 1] : null;
-  const nextPost  = idx >= 0 && idx < total - 1 ? postsInSeries[idx + 1] : null;
+  const firstPost = chapters[0];
+  const prevPost  = idx > 0 ? chapters[idx - 1] : null;
+  const nextPost  = idx >= 0 && idx < total - 1 ? chapters[idx + 1] : null;
 
   const isFirst = idx === 0;
   const firstUrl = !isFirst ? `/${firstPost.id}/` : null;

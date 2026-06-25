@@ -38,3 +38,36 @@ const LANG_LABEL: Record<string, string> = {
 export function langLabel(lang: string): string {
 	return LANG_LABEL[lang] ?? lang.toUpperCase();
 }
+
+/**
+ * Menggabungkan pasangan terjemahan jadi satu entry per artikel logis.
+ * Post yang berbagi `translationKey` di-dedupe; versi yang cocok dengan
+ * `preferLang` yang dipilih kalau ada, kalau tidak pakai yang pertama ketemu.
+ * Post tanpa `translationKey` selalu dipertahankan (tiap-tiap jadi entry sendiri).
+ *
+ * Kirim post yang sudah ter-sort sesuai urutan yang diinginkan — urutannya
+ * dipertahankan, dan tiap artikel logis menempati slot versi yang pertama terlihat.
+ */
+export function dedupeByTranslation(
+	posts: BlogPost[],
+	preferLang?: string
+): BlogPost[] {
+	const seen = new Set<string>();
+	const result: BlogPost[] = [];
+
+	for (const post of posts) {
+		const groupKey = post.data.translationKey ?? post.id;
+		if (seen.has(groupKey)) continue;
+		seen.add(groupKey);
+
+		const preferred = preferLang
+			? posts.find(
+					(p) => (p.data.translationKey ?? p.id) === groupKey && p.data.lang === preferLang
+			  )
+			: undefined;
+
+		result.push(preferred ?? post);
+	}
+
+	return result;
+}
