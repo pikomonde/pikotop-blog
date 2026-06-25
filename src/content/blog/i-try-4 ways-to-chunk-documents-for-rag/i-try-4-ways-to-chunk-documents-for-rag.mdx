@@ -1,0 +1,81 @@
+---
+title: "I Try 4 Ways to Chunk Documents for RAG"
+description: "I Try 4 Ways to Chunk Documents for RAG: 'no-chunk', 'fixed-size kata', 'fixed-size paragraf', 'rekursif kata-paragraf'"
+pubDate: "2026-06-25"
+# updatedDate: "2026-06-24"
+# heroImage: "../../assets/article-images/how-we-saved-iot-service-200-to-20000-rps/this-is-fine-meme-self-inflicted-ddos-hero-image-1200x630.webp"
+heroImage: "../../../assets/fallback-image-main.svg"
+tagTopics: ["AI", "LLM", "RAG"]
+tagSeries: ["TIL (Today I Learn)", "Modern AI Infrastructure"]
+seriesOrder:
+  "Modern AI Infrastructure": 2
+lang: "en"
+translationKey: "i-try-4-ways-to-chunk-documents-for-rag"
+# publishedOn:
+#   Medium: ""
+#   Better Programming: ""
+#   The Startup: ""
+#   Level Up Coding: ""
+#   Towards Data Science: ""
+#   Hackernoon: ""
+#   dev.to: ""
+draft: false
+author: "Piko Monde"
+---
+
+import ZoomImage from '../../../components/ZoomImage.astro';
+import TLDRBox from '../../../components/TLDRBox.astro';
+
+<TLDRBox>
+  I was trying to create AI project using RAG.
+  I tried 4 ways to *chunk* RAG documents:
+  '*no-chunk*', '*fixed-size* word', '*fixed-size* paragraph', 'recursive kata-paragraf'.
+</TLDRBox>
+
+## Apa sih RAG itu?
+
+RAG is acronym from ***Retrieval-Augmented Generation***. In simple terms, RAG is like a simple "*database*",
+which function is to store paragraphs or documents. Where, when every time a person "*prompt*" a query in AI,
+the AI, automatically search related paragraphs or documents as a "reverence". So it is like AI's internal search engine.
+
+## Projek RAG
+
+So, last week, I tried to create an app that use RAG: [Ask My Docs](http://github.com/pikomonde/pkmo-ask-my-docs).
+At first, I don't use nay *chunking*, it means that I just put 1 whole document in the DB.
+But, this has a problem, when we put 1 big document, the context window will fastly runs out.
+But how to fix it?
+
+> By using "Chunking".
+
+So, the second mode that I am using is *chunking* by **"*fixed-size*"**.
+In this project, I tried ***chunking* by "words"**. Some articles suggest chunking by word with around 300-400 words.
+So, in this project, I create the default chunking to 400 words.
+
+But, this probelm is, there is a possibility that the words is cutted in the middle of the paragraph.
+At the end, the third mode of chunking that I am using is **"*fixed-size*"** via paragraph.
+With the assumption of 80 words per paragraph, I made the default to 5 paragraphs.
+
+But, this 5 paragraphs also have a problem. It has wide range of words. Some chunk have 200 words, some have 800 words.
+So, what is the solution? I create the solution by chunk by words, then snap to paragraph. This is called "recursive".
+So, what is recursive chunking?
+
+Recursive chunking, is a chunking strategy, where we "snap" to the higher order.
+In this case (my project), is to snap to the paragraph. In this 4th mode, I am using a simple algorithm: Take 400 words,
+then "ceil" to the nearest paragraph. Using this mode, I can get more stable number of words and still get the whole paragraph.
+In my case, I got around 400-550 words, which is ideal. 
+
+---
+
+So what's next? We can chunk by "*by-document-structure*". For example, if the document is on markdown format,
+where there are *heading*, *sub-heading*, and also *table*. It means, we can chunk it by the heading/context/section.
+Or we can even create some table of content if we want a more complex structure. If you want to know more, you can search: **"*Contextual Retrieval*"**.
+
+But again. Because right now, there are many LLM that can support large context window (1 million token).
+But, tools like NotebookLM or Claude, sometimes can put a whole document, but if it is not fit to the context window,
+they can chunk to document level, then paragraph level, etc.
+
+If you want to see my project, you can check directly on [Ask My Docs GitHub](http://github.com/pikomonde/pkmo-ask-my-docs)
+or in the project page: [Ask My Docs Project Page](https://www.pikomo.top/projects/ask-my-docs/)
+
+Source:
+1. https://www.tech-japan.jp/en/blog/chunking-research/

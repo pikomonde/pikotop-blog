@@ -1,0 +1,82 @@
+---
+title: "4 Cara Aku Chunk Dokumen pada RAG"
+description: "4 cara aku chunk dokumen pada RAG: 'no-chunk', 'fixed-size kata', 'fixed-size paragraf', 'rekursif kata-paragraf'"
+pubDate: "2026-06-25"
+# updatedDate: "2026-06-24"
+# heroImage: "../../assets/article-images/how-we-saved-iot-service-200-to-20000-rps/this-is-fine-meme-self-inflicted-ddos-hero-image-1200x630.webp"
+heroImage: "../../../assets/fallback-image-main.svg"
+tagTopics: ["AI", "LLM", "RAG"]
+tagSeries: ["TIL (Today I Learn)", "Modern AI Infrastructure"]
+seriesOrder:
+  "Modern AI Infrastructure": 2
+lang: "id"
+translationKey: "i-try-4-ways-to-chunk-documents-for-rag"
+# publishedOn:
+#   Medium: ""
+#   Better Programming: ""
+#   The Startup: ""
+#   Level Up Coding: ""
+#   Towards Data Science: ""
+#   Hackernoon: ""
+#   dev.to: ""
+draft: false
+author: "Piko Monde"
+---
+
+import ZoomImage from '../../../components/ZoomImage.astro';
+import TLDRBox from '../../../components/TLDRBox.astro';
+
+<TLDRBox>
+  Aku sedang coba membuat projek AI dan menggunakan RAG.
+  Aku mencoba 4 cara untuk *chunk* dokumen pada RAG:
+  '*no-chunk*', '*fixed-size* kata', '*fixed-size* paragraf', 'rekursif kata-paragraf'.
+</TLDRBox>
+
+## Apa sih RAG itu?
+
+RAG itu singkatan dari ***Retrieval-Augmented Generation***. Sederhananya, RAG itu semacam "*database*" sederhana
+yg fungsinya untuk menyimpan paragraf-paragraf atau dokumen-dokumen. Di mana tiap kali orang "*prompt*" di AI,
+secara otomatis, AI-nya akan cari paragraf-paragraf atau dokumen-dokumen yg relevan sebagai "acuan" dari jawabannya.
+Jadi kayak semacam search **engine internal**-nya si AI sih.
+
+## Projek RAG
+
+Nah, minggu lalu, aku coba membuat aplikasi yg implemen RAG: [Ask My Docs](http://github.com/pikomonde/pkmo-ask-my-docs).
+Nah, awalnya aku ga pakai *chunking*, artinya aku langsung aja taro 1 dokumen penuh.
+Ternyata, cara ini punya masalah, yaitu, ketika kita meletakkan 1 dokumen panjang, context window akan cepat habis.
+Gmn cara fix-nya?
+
+> Yakni: dengan *Chunking*.
+
+Nah, cara kedua yg aku implementasi, adalah *chunking* dengan **"*fixed-size*"**.
+Di projek ini, aku coba ***chunking* dengan kata**. Nah, beberapa artikel menyarankan *chunking* berdasarkan kata, sekitaran 300-400 kata.
+Maka dari itu di projek ini, aku bikin *chunking* di 400 kata.
+
+Tapi masalah dari sini, adalah, ada kemungkinan kata-nya terpotong di tengah paragraf.
+Akhirnya, pada mode chunking ketiga, aku pakai chunking **"*fixed-size*"** via paragraf.
+Dengan asumsi 80 kata per paragraf, aku buat default-nya 5 paragraf.
+
+Nah, tapi, 5 paragraf ini, isinya ga beraturan, ada yg cuma 200 kata, ada yg sampai 800 kata.
+Nah, gmn solusinya? Solusi dari "fixed-size" ini adalah dengan cara "rekursif".
+Wah, apa itu chunking rekursif?
+
+Chunking rekursif ini, pada dasarnya adalah, "snap" ke bagian yg besar. Dalam kasus ini (projekku) adalah paragraf.
+Di mode chunking ke-empat, aku menggunakan algoritma sederhana: Ambil 400 kata, lalu "ceil" ke paragraf terdekat.
+Nah, dengan cara ini, aku bisa dapat stabil, setiap chunk-nya sekitar 400-550 kata. Di mana ini range yg ideal.
+
+---
+
+Apa selanjutnya? Kita bisa chunk dengan "*by-document-structure*". Misal, karena dokumen yg aku chunk itu adalah markdown,
+di mana ada *heading*, ada *sub-heading*, dan juga *table*. Artinya, lebih bagus adalah dengan snap berdasarkan konteks/heading/section.
+Atau bahkan membuat semacam daftar isi jika ingin RAG yg lebih kompleks. Kalau penasaran coba cari: **"*Contextual Retrieval*"**.
+
+Tapi balik lagi. Karena sekarang banyak LLM udh support *context window* yg gede (1jt token).
+Seperti NotebookLM atau Claude, kadang masukin 1 dokumen penuh, kalo gamuat, baru tuh, chunking ke level dokumen,
+baru ke paragraf level, dst.
+
+Kalo mau liat projek aku, bisa langsung cek di [Ask My Docs GitHub](http://github.com/pikomonde/pkmo-ask-my-docs)
+atau di project page: [Ask My Docs Project Page](https://www.pikomo.top/projects/ask-my-docs/)
+
+Sumber:
+1. https://www.tech-japan.jp/en/blog/chunking-research/
+
